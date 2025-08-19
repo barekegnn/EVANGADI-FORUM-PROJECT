@@ -15,7 +15,7 @@ app.use(express.json());
 
 // A simple test route to confirm the server is running
 app.get("/", (req, res) => {
-  res.send("Welcome to the Evangadi Q&A Platform Backend!");
+  res.json("Welcome to the Evangadi Q&A Platform Backend!");
 });
 
 // We will add more routes here later...
