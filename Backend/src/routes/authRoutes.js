@@ -1,7 +1,5 @@
-// backend/src/routes/authRoutes.js
-
 const express = require("express");
-const { register, login, checkUser } = require("../controllers/authController"); // Import controller functions
+const { register, login, checkUser } = require("../controllers/authController");
 const { protect } = require("../middleware/authMiddleware"); // <<-- CRITICAL: Import the protection middleware
 
 // Create an Express router instance

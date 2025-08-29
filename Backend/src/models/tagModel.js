@@ -1,61 +1,115 @@
 const pool = require("../config/database");
 
 // ======================================================================
-// 1. Function to retrieve all available tags from the database.
-//    This is used, for example, to display a list of tags when a user is
-//    creating a new question or browsing tags.
+// 1. NEW: Function to find an array of tags by name, creating them if they don't exist.
 // ======================================================================
-async function getAllTags() {
-  // Selects all tag IDs and names from the 'tags' table.
-  // Orders them alphabetically by name for easy display.
-  const [rows] = await pool.execute(
-    "SELECT id, name FROM tags ORDER BY name ASC"
-  );
-  return rows; // Returns an array of tag objects (e.g., [{ id: 1, name: 'JavaScript' }])
+async function createOrFindTags(tagNames) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const tagIds = [];
+    for (const tagName of tagNames) {
+      const normalizedName = tagName.trim().toLowerCase();
+      if (!normalizedName) continue;
+
+      const [existingRows] = await connection.execute(
+        "SELECT id FROM tags WHERE name = ?",
+        [normalizedName]
+      );
+
+      if (existingRows.length > 0) {
+        tagIds.push(existingRows[0].id);
+      } else {
+        const [result] = await connection.execute(
+          "INSERT INTO tags (name) VALUES (?)",
+          [normalizedName]
+        );
+        tagIds.push(result.insertId);
+      }
+    }
+
+    await connection.commit();
+    return tagIds;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
 // ======================================================================
-// 2. Function to associate a list of tags with a specific question.
-//    This is called after a question is created or updated, to link it to relevant tags.
+// 2. Function to add tags to a question (associating them in the junction table).
 // ======================================================================
 async function addTagsToQuestion(questionId, tagIds) {
-  // Basic check: If no tag IDs are provided, there's nothing to do.
   if (!tagIds || tagIds.length === 0) {
     return;
   }
 
-  // Prepare values for a bulk insert query.
-  // We create a string like '(?, ?), (?, ?), ...' for multiple tag associations.
-  const values = tagIds.map((tagId) => `(${questionId}, ${tagId})`).join(",");
-
-  // 'INSERT IGNORE' is used here.
-  // 'IGNORE' prevents an error if a specific question_id-tag_id pair already exists.
-  // Instead of failing, it just skips that duplicate insertion, which is useful
-  // when updating tags for a question where some might already be linked.
-  await pool.execute(
-    `INSERT IGNORE INTO question_tags (question_id, tag_id) VALUES ${values}`
-  );
+  const values = tagIds.map((tagId) => [questionId, tagId]);
+  try {
+    await pool.query(
+      "INSERT IGNORE INTO question_tags (question_id, tag_id) VALUES ?",
+      [values]
+    );
+    return true;
+  } catch (error) {
+    throw error;
+  }
 }
 
 // ======================================================================
-// 3. Function to retrieve all tags associated with a specific question.
-//    This is used when viewing a question's details to show its relevant tags.
+// 3. Function to get all tags for a specific question.
 // ======================================================================
 async function getTagsByQuestionId(questionId) {
-  // Joins 'tags' table with 'question_tags' (our junction table)
-  // to find all Atag names associated with a given 'questionId'.
-  const [rows] = await pool.execute(
-    `SELECT t.id, t.name
-         FROM tags t
-         JOIN question_tags qt ON t.id = qt.tag_id
-         WHERE qt.question_id = ?`,
-    [questionId]
-  );
-  return rows;
+  try {
+    const [rows] = await pool.execute(
+      `SELECT t.id, t.name
+             FROM tags t
+             JOIN question_tags qt ON t.id = qt.tag_id
+             WHERE qt.question_id = ?`,
+      [questionId]
+    );
+    return rows;
+  } catch (error) {
+    throw error;
+  }
 }
 
+// ======================================================================
+// 4. Function to get all existing tags from the database.
+// ======================================================================
+async function getAllTags() {
+  try {
+    const [rows] = await pool.execute("SELECT id, name FROM tags");
+    return rows;
+  } catch (error) {
+    throw error;
+  }
+}
+
+// ======================================================================
+// 5. NEW FUNCTION: Remove all tag associations for a specific question.
+// ======================================================================
+async function removeAllTagsFromQuestion(questionId) {
+  try {
+    // Deletes all entries in the 'question_tags' junction table
+    // that are linked to the given question ID.
+    await pool.execute("DELETE FROM question_tags WHERE question_id = ?", [
+      questionId,
+    ]);
+    return true; // Indicate success
+  } catch (error) {
+    throw error;
+  }
+}
+
+// Export all the functions.
 module.exports = {
-  getAllTags,
+  createOrFindTags,
   addTagsToQuestion,
   getTagsByQuestionId,
+  getAllTags,
+  removeAllTagsFromQuestion, // Export the new function
 };
