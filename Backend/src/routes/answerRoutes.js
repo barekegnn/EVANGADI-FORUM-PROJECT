@@ -1,22 +1,19 @@
+// backend/src/routes/answerRoutes.js
+
 const express = require("express");
 const {
-  createAnswer,
   updateAnswer,
   deleteAnswer,
   acceptAnswer,
-} = require("../controllers/answerController");
-const { protect } = require("../middleware/authMiddleware");
+} = require("../controllers/answerController"); // Import answer controller functions
+const { protect } = require("../middleware/authMiddleware"); // Import the protection middleware
 
 // Create an Express router instance
 const router = express.Router();
 
 // ======================================================================
-// Define Answer Routes
+// Define Answer Routes (only for actions on a specific answer by its ID)
 // ======================================================================
-
-// POST /api/questions/:questionId/answers - Create a new answer for a specific question (Protected)
-// Only authenticated users can post answers.
-router.post("/:questionId/answers", protect, createAnswer);
 
 // PUT /api/answers/:id - Update an existing answer (Protected - Only author)
 // Only authenticated users who are the author can update answers.
@@ -30,4 +27,5 @@ router.delete("/:id", protect, deleteAnswer);
 // Only the authenticated user who asked the question can accept an answer.
 router.put("/:id/accept", protect, acceptAnswer);
 
+// Export the router
 module.exports = router;

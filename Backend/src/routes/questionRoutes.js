@@ -5,8 +5,9 @@ const {
   getQuestionById,
   updateQuestion,
   deleteQuestion,
-} = require("../controllers/questionController");
-const { protect } = require("../middleware/authMiddleware");
+} = require("../controllers/questionController"); // Import question controller functions
+const { createAnswer } = require("../controllers/answerController"); // Import the createAnswer function
+const { protect } = require("../middleware/authMiddleware"); // Import the protection middleware
 
 // Create an Express router instance
 const router = express.Router();
@@ -35,5 +36,9 @@ router.put("/:id", protect, updateQuestion);
 // Only authenticated users who are the author can delete questions.
 router.delete("/:id", protect, deleteQuestion);
 
+// >>> NEW: POST /api/questions/:questionId/answers - Create a new answer (Protected)
+// This is now correctly placed here so it's handled by the `questionRoutes` router.
+router.post("/:questionId/answers", protect, createAnswer);
 
+// Export the router
 module.exports = router;

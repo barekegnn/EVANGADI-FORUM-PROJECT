@@ -1,209 +1,148 @@
-// Import necessary models
-const questionModel = require("../models/questionModel"); // To interact with the 'questions' table
-const answerModel = require("../models/answerModel"); // To get answers for a specific question
-const tagModel = require("../models/tagModel"); // To manage/retrieve tags for questions
-const voteModel = require("../models/voteModel"); // To get user's vote status for a question
+// backend/src/controllers/questionController.js
+
+const questionModel = require('../models/questionModel');
+const answerModel = require('../models/answerModel');
+const tagModel = require('../models/tagModel');
+const voteModel = require('../models/voteModel'); // Correct import for the vote model
 
 // ======================================================================
-// 1. Controller function to create a new question (POST /api/questions)
-//    This now handles dynamic tag creation.
+// Controller to handle creating a new question
 // ======================================================================
 async function createQuestion(req, res) {
-  // 1.1 Extract title and content from the request body.
-  //     'tags' is now an array of tag NAMES (strings)
-  const { title, content, tags } = req.body;
-  // 1.2 The 'protect' middleware would have attached the authenticated user's ID to `req.user.id`.
-  const userId = req.user.id;
+    const { title, content, tags } = req.body;
+    const { id: userId } = req.user; // Get userId from the authenticated user
 
-  // 1.3 Validate input: Ensure title and content are provided.
-  if (!title || !content) {
-    return res.status(400).json({
-      error: "Please provide both title and content for the question.",
-    });
-  }
-
-  try {
-    let tagIds = [];
-    // 1.4 Handle tags: Find or create tags based on the names provided.
-    if (tags && tags.length > 0) {
-      // This is the new, crucial step! Call the new model function.
-      tagIds = await tagModel.createOrFindTags(tags);
+    // Validate input
+    if (!title || !content) {
+        return res.status(400).json({ error: 'Title and content are required.' });
     }
 
-    // 1.5 Call the model to create the question in the database.
-    const questionId = await questionModel.createQuestion(
-      userId,
-      title,
-      content
-    );
+    try {
+        // Create the question in the database
+        const questionId = await questionModel.createQuestion(userId, title, content);
 
-    // 1.6 If tags were found or created, associate them with the new question.
-    if (tagIds.length > 0) {
-      await tagModel.addTagsToQuestion(questionId, tagIds);
+        // Process tags and link them to the question
+        if (tags && tags.length > 0) {
+            const tagIds = await tagModel.createOrFindTags(tags);
+            await tagModel.addTagsToQuestion(questionId, tagIds);
+        }
+
+        res.status(201).json({ message: 'Question created successfully.', questionId, userId });
+    } catch (error) {
+        console.error('Error creating question:', error);
+        res.status(500).json({ error: 'Internal server error while creating question.' });
     }
-
-    // 1.7 Send a success response with the ID of the new question.
-    res.status(201).json({
-      message: "Question created successfully",
-      questionId,
-      userId, // Optionally include userId to confirm author
-    });
-  } catch (error) {
-    // 1.8 Log and send an error response if something goes wrong.
-    console.error("Error creating question:", error);
-    res
-      .status(500)
-      .json({ error: "Internal server error while creating question." });
-  }
 }
 
 // ======================================================================
-// 2. Controller function to get all questions (GET /api/questions)
-//    Logic is unchanged, as the model handles fetching tags.
-// ======================================================================
-async function getAllQuestions(req, res) {
-  try {
-    const questions = await questionModel.getAllQuestions();
-    res.status(200).json(questions);
-  } catch (error) {
-    console.error("Error fetching all questions:", error);
-    res
-      .status(500)
-      .json({ error: "Internal server error while fetching questions." });
-  }
-}
-
-// ======================================================================
-// 3. Controller function to get a single question by ID (GET /api/questions/:id)
-//    Logic is unchanged, as the models handle fetching tags and other data.
+// Controller to get a question and its associated data by ID
 // ======================================================================
 async function getQuestionById(req, res) {
-  const questionId = req.params.id;
-  const currentUserId = req.user ? req.user.id : null;
+    const { id } = req.params;
+    const userId = req.user ? req.user.id : null; // Get user ID if authenticated
 
-  try {
-    const question = await questionModel.getQuestionById(questionId);
-    if (!question) {
-      return res.status(404).json({ error: "Question not found." });
+    try {
+        // Fetch the question details from the database
+        const question = await questionModel.getQuestionById(id, userId);
+
+        // If no question is found, return a 404 error
+        if (!question) {
+            return res.status(404).json({ error: 'Question not found.' });
+        }
+
+        // Fetch answers and tags concurrently for efficiency
+        const [answers, tags] = await Promise.all([
+            answerModel.getAnswersByQuestionId(id),
+            tagModel.getTagsByQuestionId(id),
+        ]);
+
+        // Get the logged-in user's vote on this question if authenticated
+        let userVote = 0;
+        if (userId) {
+            userVote = await voteModel.getUserVoteForQuestion(userId, id);
+        }
+
+        // Combine all data into a single response object
+        const responseData = {
+            ...question,
+            answers,
+            tags,
+            user_vote: userVote,
+        };
+
+        res.status(200).json(responseData);
+    } catch (error) {
+        console.error('Error fetching question details:', error);
+        res.status(500).json({ error: 'Internal server error while fetching question details.' });
     }
-
-    const answers = await answerModel.getAnswersByQuestionId(questionId);
-    const tags = await tagModel.getTagsByQuestionId(questionId);
-
-    let userVote = 0;
-    if (currentUserId) {
-      userVote = await voteModel.getUserVoteForQuestion(
-        currentUserId,
-        questionId
-      );
-    }
-
-    res.status(200).json({
-      ...question,
-      answers,
-      tags,
-      user_vote: userVote,
-    });
-  } catch (error) {
-    console.error(`Error fetching question with ID ${questionId}:`, error);
-    res.status(500).json({
-      error: "Internal server error while fetching question details.",
-    });
-  }
 }
 
 // ======================================================================
-// 4. Controller function to update an existing question (PUT /api/questions/:id)
-//    This now handles dynamic tag updates.
+// Controller to get all questions
+// ======================================================================
+async function getAllQuestions(req, res) {
+    try {
+        const questions = await questionModel.getAllQuestions();
+        res.status(200).json(questions);
+    } catch (error) {
+        console.error('Error fetching all questions:', error);
+        res.status(500).json({ error: 'Internal server error while fetching all questions.' });
+    }
+}
+
+// ======================================================================
+// Controller to update a question
 // ======================================================================
 async function updateQuestion(req, res) {
-  const questionId = req.params.id;
-  // `tags` is now an array of tag NAMES (strings)
-  const { title, content, tags } = req.body;
-  const userId = req.user.id;
+    const { id } = req.params;
+    const { id: userId } = req.user;
+    const { title, content, tags } = req.body;
 
-  if (!title || !content) {
-    return res
-      .status(400)
-      .json({ error: "Title and content are required to update a question." });
-  }
+    try {
+        const isUpdated = await questionModel.updateQuestion(id, userId, title, content, tags);
 
-  try {
-    const wasUpdated = await questionModel.updateQuestion(
-      questionId,
-      userId,
-      title,
-      content
-    );
-    if (!wasUpdated) {
-      const questionExists = await questionModel.getQuestionById(questionId);
-      if (!questionExists) {
-        return res.status(404).json({ error: "Question not found." });
-      } else {
-        return res.status(403).json({
-          error: "Unauthorized: You can only update your own questions.",
-        });
-      }
+        if (!isUpdated) {
+            return res.status(404).json({ error: 'Question not found or unauthorized to update.' });
+        }
+
+        // Handle tags
+        if (tags && tags.length > 0) {
+            await tagModel.removeTagsFromQuestion(id);
+            const tagIds = await tagModel.createOrFindTags(tags);
+            await tagModel.addTagsToQuestion(id, tagIds);
+        }
+
+        res.status(200).json({ message: 'Question updated successfully.' });
+    } catch (error) {
+        console.error('Error updating question:', error);
+        res.status(500).json({ error: 'Internal server error while updating question.' });
     }
-
-    // Handle tag updates: Find or create tags based on the new names.
-    let tagIds = [];
-    if (tags && tags.length > 0) {
-      tagIds = await tagModel.createOrFindTags(tags);
-    }
-
-    // First, remove all existing tags for a clean replacement using the model function
-    // Now calling the dedicated model function for this! 🎉
-    await tagModel.removeAllTagsFromQuestion(questionId);
-
-    // Then, re-add the new (or existing) tags
-    if (tagIds.length > 0) {
-      await tagModel.addTagsToQuestion(questionId, tagIds);
-    }
-
-    res.status(200).json({ message: "Question updated successfully." });
-  } catch (error) {
-    console.error(`Error updating question with ID ${questionId}:`, error);
-    res
-      .status(500)
-      .json({ error: "Internal server error while updating question." });
-  }
 }
 
 // ======================================================================
-// 5. Controller function to delete a question (DELETE /api/questions/:id)
-//    Logic is unchanged.
+// Controller to delete a question
 // ======================================================================
 async function deleteQuestion(req, res) {
-  const questionId = req.params.id;
-  const userId = req.user.id;
+    const { id } = req.params;
+    const { id: userId } = req.user;
 
-  try {
-    const wasDeleted = await questionModel.deleteQuestion(questionId, userId);
-    if (!wasDeleted) {
-      const questionExists = await questionModel.getQuestionById(questionId);
-      if (!questionExists) {
-        return res.status(404).json({ error: "Question not found." });
-      } else {
-        return res.status(403).json({
-          error: "Unauthorized: You can only delete your own questions.",
-        });
-      }
+    try {
+        const isDeleted = await questionModel.deleteQuestion(id, userId);
+        if (!isDeleted) {
+            return res.status(404).json({ error: 'Question not found or unauthorized to delete.' });
+        }
+        res.status(200).json({ message: 'Question deleted successfully.' });
+    } catch (error) {
+        console.error('Error deleting question:', error);
+        res.status(500).json({ error: 'Internal server error while deleting question.' });
     }
-    res.status(200).json({ message: "Question deleted successfully." });
-  } catch (error) {
-    console.error(`Error deleting question with ID ${questionId}:`, error);
-    res
-      .status(500)
-      .json({ error: "Internal server error while deleting question." });
-  }
 }
 
-// Export all the controller functions to be used by the routes
+// Export the functions for use by the router
 module.exports = {
-  createQuestion,
-  getAllQuestions,
-  getQuestionById,
-  updateQuestion,
-  deleteQuestion,
+    createQuestion,
+    getAllQuestions,
+    getQuestionById,
+    updateQuestion,
+    deleteQuestion,
 };
