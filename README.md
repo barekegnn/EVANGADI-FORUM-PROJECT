@@ -7,6 +7,7 @@
 - **Freshers feel lost**: info is scattered, unclear, or outdated.
 - **Hard to find the right mentor**: not everyone knows who to ask.
 - **Wasted time and wrong advice**: leads to confusion and poor decisions.
+- **Generic AI lacks lived context**: tools like ChatGPT haven’t experienced Haramaya’s realities, so they can’t reliably give situation‑specific, campus‑aware guidance.
 
 ### The solution
 - **Ask anything, get peer‑verified answers** from seniors and experienced students.
