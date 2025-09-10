@@ -1,133 +1,86 @@
 const pool = require("../config/database");
 
 // ======================================================================
-// 1. Function to record or update a vote on a question.
-//    This function handles both adding a new vote and changing an existing vote.
+// 1. Function to get a user's vote on a specific question
 // ======================================================================
-async function recordQuestionVote(userId, questionId, voteType) {
-  // 'voteType' will be 1 for upvote, -1 for downvote.
+async function getUserVoteForQuestion(userId, questionId) {
+  const sql = `
+        SELECT vote_type
+        FROM question_votes
+        WHERE user_id = ? AND question_id = ?;
+    `;
+  const [rows] = await pool.execute(sql, [userId, questionId]);
 
-  // Get a dedicated connection for a transaction to ensure atomicity.
-  const connection = await pool.getConnection();
-  try {
-    await connection.beginTransaction(); // Start a transaction.
-
-    // Step 1: Check if the user has already voted on this question.
-    const [existingVote] = await connection.execute(
-      "SELECT vote_type FROM votes WHERE user_id = ? AND question_id = ? AND answer_id IS NULL",
-      [userId, questionId]
-    );
-
-    let voteChanged = false; // Flag to indicate if a vote was changed (not just added)
-
-    if (existingVote.length > 0) {
-      // User has an existing vote.
-      const oldVoteType = existingVote[0].vote_type;
-
-      if (oldVoteType === voteType) {
-        // If the new vote is the same as the old one, it means the user wants to remove their vote.
-        await connection.execute(
-          "DELETE FROM votes WHERE user_id = ? AND question_id = ? AND answer_id IS NULL",
-          [userId, questionId]
-        );
-        // Also decrement the score from the question
-        await connection.execute(
-          "UPDATE questions SET score = score - ? WHERE id = ?",
-          [oldVoteType, questionId]
-        );
-        voteChanged = true; // Vote was "changed" to removed
-      } else {
-        // User is changing their vote (e.g., upvote to downvote, or vice-versa).
-        await connection.execute(
-          "UPDATE votes SET vote_type = ? WHERE user_id = ? AND question_id = ? AND answer_id IS NULL",
-          [voteType, userId, questionId]
-        );
-        // Adjust question score: subtract old vote and add new vote.
-        await connection.execute(
-          "UPDATE questions SET score = score - ? + ? WHERE id = ?",
-          [oldVoteType, voteType, questionId]
-        );
-        voteChanged = true; // Vote was changed
-      }
-    } else {
-      // User is casting a new vote.
-      await connection.execute(
-        "INSERT INTO votes (user_id, question_id, vote_type) VALUES (?, ?, ?)",
-        [userId, questionId, voteType]
-      );
-      // Increment the question's score.
-      await connection.execute(
-        "UPDATE questions SET score = score + ? WHERE id = ?",
-        [voteType, questionId]
-      );
-    }
-
-    await connection.commit(); // Commit the transaction if all steps succeed.
-    return true; // Indicate success.
-  } catch (error) {
-    await connection.rollback(); // Rollback changes if any error occurs.
-    throw error; // Re-throw the error for the controller to handle.
-  } finally {
-    connection.release(); // Always release the connection back to the pool.
-  }
+  // Return the vote type (1 for upvote, -1 for downvote) or 0 if no vote exists
+  return rows.length > 0 ? rows[0].vote_type : 0;
 }
 
 // ======================================================================
-// 2. Function to record or update a vote on an answer.
-//    Similar logic to question votes but for answers.
+// 2. Function to get a user's vote on a specific answer
 // ======================================================================
-async function recordAnswerVote(userId, answerId, voteType) {
+async function getUserVoteForAnswer(userId, answerId) {
+  const sql = `
+        SELECT vote_type
+        FROM answer_votes
+        WHERE user_id = ? AND answer_id = ?;
+    `;
+  const [rows] = await pool.execute(sql, [userId, answerId]);
+
+  // Return the vote type (1 for upvote, -1 for downvote) or 0 if no vote exists
+  return rows.length > 0 ? rows[0].vote_type : 0;
+}
+
+// ======================================================================
+// 3. Function to update or create a vote on a question
+// ======================================================================
+async function voteOnQuestion(userId, questionId, voteType) {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
 
-    const [existingVote] = await connection.execute(
-      "SELECT vote_type FROM votes WHERE user_id = ? AND answer_id = ? AND question_id IS NULL",
-      [userId, answerId]
+    // Check if the user has already voted on this question
+    const [existingVoteRows] = await connection.execute(
+      "SELECT id, vote_type FROM question_votes WHERE user_id = ? AND question_id = ?",
+      [userId, questionId]
     );
 
-    let voteChanged = false;
+    let voteChange = 0;
+    let finalVoteType = voteType;
 
-    if (existingVote.length > 0) {
-      const oldVoteType = existingVote[0].vote_type;
-
-      if (oldVoteType === voteType) {
-        // Remove vote
-        await connection.execute(
-          "DELETE FROM votes WHERE user_id = ? AND answer_id = ? AND question_id IS NULL",
-          [userId, answerId]
-        );
-        await connection.execute(
-          "UPDATE answers SET score = score - ? WHERE id = ?",
-          [oldVoteType, answerId]
-        );
-        voteChanged = true;
+    if (existingVoteRows.length > 0) {
+      const existingVote = existingVoteRows[0];
+      if (existingVote.vote_type === voteType) {
+        // User is voting the same way again, so remove their vote
+        await connection.execute("DELETE FROM question_votes WHERE id = ?", [
+          existingVote.id,
+        ]);
+        voteChange = -voteType; // Adjust the vote count by the opposite value
+        finalVoteType = 0; // No vote
       } else {
-        // Change vote
+        // User is changing their vote (e.g., from upvote to downvote)
         await connection.execute(
-          "UPDATE votes SET vote_type = ? WHERE user_id = ? AND answer_id = ? AND question_id IS NULL",
-          [voteType, userId, answerId]
+          "UPDATE question_votes SET vote_type = ? WHERE id = ?",
+          [voteType, existingVote.id]
         );
-        await connection.execute(
-          "UPDATE answers SET score = score - ? + ? WHERE id = ?",
-          [oldVoteType, voteType, answerId]
-        );
-        voteChanged = true;
+        voteChange = voteType - existingVote.vote_type;
       }
     } else {
-      // New vote
+      // User is casting a new vote
       await connection.execute(
-        "INSERT INTO votes (user_id, answer_id, vote_type) VALUES (?, ?, ?)",
-        [userId, answerId, voteType]
+        "INSERT INTO question_votes (user_id, question_id, vote_type) VALUES (?, ?, ?)",
+        [userId, questionId, voteType]
       );
-      await connection.execute(
-        "UPDATE answers SET score = score + ? WHERE id = ?",
-        [voteType, answerId]
-      );
+      voteChange = voteType;
     }
 
+    // Update the vote_count on the questions table
+    await connection.execute(
+      "UPDATE questions SET vote_count = vote_count + ? WHERE id = ?",
+      [voteChange, questionId]
+    );
+
     await connection.commit();
-    return true;
+    return { success: true, newVoteType: finalVoteType };
   } catch (error) {
     await connection.rollback();
     throw error;
@@ -137,30 +90,62 @@ async function recordAnswerVote(userId, answerId, voteType) {
 }
 
 // ======================================================================
-// 3. Function to get a user's vote on a specific question (if any).
+// 4. Function to update or create a vote on an answer
 // ======================================================================
-async function getUserVoteForQuestion(userId, questionId) {
-  const [rows] = await pool.execute(
-    "SELECT vote_type FROM votes WHERE user_id = ? AND question_id = ? AND answer_id IS NULL",
-    [userId, questionId]
-  );
-  return rows.length > 0 ? rows[0].vote_type : 0; // Returns 1, -1, or 0 if no vote
-}
+async function voteOnAnswer(userId, answerId, voteType) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
 
-// ======================================================================
-// 4. Function to get a user's vote on a specific answer (if any).
-// ======================================================================
-async function getUserVoteForAnswer(userId, answerId) {
-  const [rows] = await pool.execute(
-    "SELECT vote_type FROM votes WHERE user_id = ? AND answer_id = ? AND question_id IS NULL",
-    [userId, answerId]
-  );
-  return rows.length > 0 ? rows[0].vote_type : 0; // Returns 1, -1, or 0 if no vote
+    const [existingVoteRows] = await connection.execute(
+      "SELECT id, vote_type FROM answer_votes WHERE user_id = ? AND answer_id = ?",
+      [userId, answerId]
+    );
+
+    let voteChange = 0;
+    let finalVoteType = voteType;
+
+    if (existingVoteRows.length > 0) {
+      const existingVote = existingVoteRows[0];
+      if (existingVote.vote_type === voteType) {
+        await connection.execute("DELETE FROM answer_votes WHERE id = ?", [
+          existingVote.id,
+        ]);
+        voteChange = -voteType;
+        finalVoteType = 0;
+      } else {
+        await connection.execute(
+          "UPDATE answer_votes SET vote_type = ? WHERE id = ?",
+          [voteType, existingVote.id]
+        );
+        voteChange = voteType - existingVote.vote_type;
+      }
+    } else {
+      await connection.execute(
+        "INSERT INTO answer_votes (user_id, answer_id, vote_type) VALUES (?, ?, ?)",
+        [userId, answerId, voteType]
+      );
+      voteChange = voteType;
+    }
+
+    await connection.execute(
+      "UPDATE answers SET vote_count = vote_count + ? WHERE id = ?",
+      [voteChange, answerId]
+    );
+
+    await connection.commit();
+    return { success: true, newVoteType: finalVoteType };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
 module.exports = {
-  recordQuestionVote,
-  recordAnswerVote,
   getUserVoteForQuestion,
   getUserVoteForAnswer,
+  voteOnQuestion,
+  voteOnAnswer,
 };

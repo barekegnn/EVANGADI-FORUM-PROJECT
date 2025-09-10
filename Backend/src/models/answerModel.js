@@ -1,3 +1,5 @@
+// backend/src/models/answerModel.js
+
 const pool = require("../config/database");
 
 // ======================================================================
@@ -24,7 +26,7 @@ async function getAnswersByQuestionId(questionId) {
             a.created_at,
             u.id AS user_id,
             u.username,
-            (SELECT COUNT(*) FROM answer_votes WHERE answer_id = a.id) AS votes
+            a.vote_count AS votes
         FROM answers a
         JOIN users u ON a.user_id = u.id
         WHERE a.question_id = ?

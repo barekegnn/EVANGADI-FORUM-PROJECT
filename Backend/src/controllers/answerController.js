@@ -2,6 +2,7 @@
 const answerModel = require("../models/answerModel"); // For answer-specific database operations
 const questionModel = require("../models/questionModel"); // To verify question existence/asker
 const voteModel = require("../models/voteModel"); // To get user's vote status for an answer
+const notificationModel = require("../models/notificationModel");
 
 // ======================================================================
 // 1. Controller function to create a new answer (POST /api/questions/:questionId/answers)
@@ -33,7 +34,35 @@ async function createAnswer(req, res) {
       content
     );
 
-    // 1.6 Send a success response.
+    // 1.6 Create a notification for the question author (if not same as answer author)
+    try {
+      const question = await questionModel.getQuestionById(questionId);
+      if (question && question.user_id && question.user_id !== userId) {
+        const message = "New answer posted to your question";
+        await notificationModel.createNotification(
+          question.user_id,
+          "ANSWER_CREATED",
+          answerId,
+          message,
+          JSON.stringify({ questionId, answerId, authorId: userId })
+        );
+
+        // Emit realtime notification via Socket.IO
+        const io = req.app.get("io");
+        if (io) {
+          io.to(`user:${question.user_id}`).emit("notification", {
+            type: "ANSWER_CREATED",
+            entityId: answerId,
+            message,
+            createdAt: new Date().toISOString(),
+          });
+        }
+      }
+    } catch (notifyErr) {
+      console.error("Failed to create/emit answer notification:", notifyErr);
+    }
+
+    // 1.7 Send a success response.
     res.status(201).json({
       message: "Answer posted successfully",
       answerId,
@@ -41,7 +70,7 @@ async function createAnswer(req, res) {
       userId,
     });
   } catch (error) {
-    // 1.7 Log and send an error response.
+    // 1.8 Log and send an error response.
     console.error(`Error creating answer for question ${questionId}:`, error);
     res
       .status(500)
@@ -182,7 +211,37 @@ async function acceptAnswer(req, res) {
         .json({ error: "Failed to accept answer for an unknown reason." });
     }
 
-    // 4.6 Send a success response.
+    // 4.6 Notify the answer author about acceptance
+    try {
+      const io = req.app.get("io");
+      const acceptedAnswer = await answerModel.getAnswerById(answerId);
+      if (acceptedAnswer && acceptedAnswer.user_id) {
+        const recipientUserId = acceptedAnswer.user_id;
+        const message = "Your answer was accepted";
+        await notificationModel.createNotification(
+          recipientUserId,
+          "ANSWER_ACCEPTED",
+          answerId,
+          message,
+          JSON.stringify({ questionId, answerId })
+        );
+        if (io) {
+          io.to(`user:${recipientUserId}`).emit("notification", {
+            type: "ANSWER_ACCEPTED",
+            entityId: answerId,
+            message,
+            createdAt: new Date().toISOString(),
+          });
+        }
+      }
+    } catch (notifyErr) {
+      console.error(
+        "Failed to create/emit acceptance notification:",
+        notifyErr
+      );
+    }
+
+    // 4.7 Send a success response.
     res.status(200).json({ message: "Answer accepted successfully." });
   } catch (error) {
     // 4.7 The model might throw a specific error like 'Unauthorized: Only the question asker can accept an answer.'

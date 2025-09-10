@@ -1,51 +1,43 @@
-// backend/src/models/userModel.js
-
-// Import the database connection pool
 const pool = require("../config/database");
 
+/**
+ * This model handles all interactions with the 'users' table in MySQL.
+ * Its primary purpose is to provide functions for accessing and updating
+ * user data once a user is authenticated.
+ */
+
 // ======================================================================
-// Helper function to find a user by their email
-// This is used during login and registration to check if a user already exists
+// Function to find a user by their ID.
+// Used by the authMiddleware to get user data from the token.
 // ======================================================================
-async function findUserByEmail(email) {
-  // The pool.execute() method uses prepared statements, which is crucial for security
-  // The '?' is a placeholder that is replaced by the 'email' variable
-  const [rows] = await pool.execute(
-    "SELECT id, username, email, password_hash FROM users WHERE email = ?",
-    [email]
-  );
-  // The result is an array. We return the first element, which is the user object, or undefined if not found.
+async function findById(id) {
+  const sql = `
+    SELECT id, username, email
+    FROM users
+    WHERE id = ?;
+  `;
+  const [rows] = await pool.execute(sql, [id]);
   return rows[0];
 }
 
 // ======================================================================
-// Function to create a new user in the database
+// Function to update a user's profile by their ID.
+// This is used by the userController.
 // ======================================================================
-async function createUser(username, email, passwordHash) {
-  const [result] = await pool.execute(
-    "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)",
-    [username, email, passwordHash]
-  );
-  // The result object contains information about the insert operation.
-  // We return the ID of the new user.
-  return result.insertId;
+async function updateById(id, { username, email }) {
+  const sql = `
+    UPDATE users
+    SET username = ?, email = ?
+    WHERE id = ?;
+  `;
+  await pool.execute(sql, [username, email, id]);
+
+  // After updating, we find the user again to return the new data.
+  const updatedUser = await findById(id);
+  return updatedUser;
 }
 
-// ======================================================================
-// Function to find a user by their ID
-// Used for fetching a user's details after they log in
-// ======================================================================
-async function findUserById(userId) {
-  const [rows] = await pool.execute(
-    "SELECT id, username, email FROM users WHERE id = ?",
-    [userId]
-  );
-  return rows[0];
-}
-
-// Export the functions so they can be used in other files (like the controller)
 module.exports = {
-  findUserByEmail,
-  createUser,
-  findUserById,
+  findById,
+  updateById,
 };

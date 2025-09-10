@@ -3,12 +3,12 @@ const cors = require("cors");
 
 // Import the database connection pool (this will run the connection test on app startup)
 const pool = require("./config/database");
-
 const authRoutes = require("./routes/authRoutes");
-
 const questionRoutes = require("./routes/questionRoutes");
-
 const answerRoutes = require("./routes/answerRoutes");
+const voteRoutes = require("./routes/voteRoutes");
+const userRoutes = require("./routes/userRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 const app = express();
 
@@ -18,6 +18,7 @@ app.use(cors());
 
 // Enable Express to parse JSON body from requests
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 // A simple test route to confirm the server is running
 app.get("/", (req, res) => {
@@ -34,7 +35,9 @@ app.use("/api/questions", questionRoutes);
 // Note: Some answer routes will use /api/questions/:questionId/answers as their base.
 // This /api/answers route is for operations directly on an answer by its ID.
 app.use("/api/answers", answerRoutes);
-
+app.use("/api/votes", voteRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/notifications", notificationRoutes);
 // Error handling middleware (optional, but good practice for full apps)
 app.use((err, req, res, next) => {
   console.error(err.stack);
