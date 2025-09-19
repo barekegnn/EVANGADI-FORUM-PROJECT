@@ -86,7 +86,6 @@ async function deleteQuestion(questionId, userId) {
   return result.affectedRows > 0;
 }
 
-// Export all the functions
 module.exports = {
   createQuestion,
   getQuestionById,

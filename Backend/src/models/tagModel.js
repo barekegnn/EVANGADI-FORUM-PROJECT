@@ -1,8 +1,6 @@
 const pool = require("../config/database");
 
-// ======================================================================
-// 1. NEW: Function to find an array of tags by name, creating them if they don't exist.
-// ======================================================================
+// 1.Function to find an array of tags by name, creating them if they don't exist.
 async function createOrFindTags(tagNames) {
   const connection = await pool.getConnection();
   try {
@@ -28,7 +26,6 @@ async function createOrFindTags(tagNames) {
         tagIds.push(result.insertId);
       }
     }
-
     await connection.commit();
     return tagIds;
   } catch (error) {
@@ -39,14 +36,11 @@ async function createOrFindTags(tagNames) {
   }
 }
 
-// ======================================================================
 // 2. Function to add tags to a question (associating them in the junction table).
-// ======================================================================
 async function addTagsToQuestion(questionId, tagIds) {
   if (!tagIds || tagIds.length === 0) {
     return;
   }
-
   const values = tagIds.map((tagId) => [questionId, tagId]);
   try {
     await pool.query(
@@ -59,9 +53,7 @@ async function addTagsToQuestion(questionId, tagIds) {
   }
 }
 
-// ======================================================================
 // 3. Function to get all tags for a specific question.
-// ======================================================================
 async function getTagsByQuestionId(questionId) {
   try {
     const [rows] = await pool.execute(
@@ -77,9 +69,7 @@ async function getTagsByQuestionId(questionId) {
   }
 }
 
-// ======================================================================
 // 4. Function to get all existing tags from the database.
-// ======================================================================
 async function getAllTags() {
   try {
     const [rows] = await pool.execute("SELECT id, name FROM tags");
@@ -89,9 +79,7 @@ async function getAllTags() {
   }
 }
 
-// ======================================================================
 // 5. NEW FUNCTION: Remove all tag associations for a specific question.
-// ======================================================================
 async function removeAllTagsFromQuestion(questionId) {
   try {
     // Deletes all entries in the 'question_tags' junction table
@@ -105,11 +93,10 @@ async function removeAllTagsFromQuestion(questionId) {
   }
 }
 
-// Export all the functions.
 module.exports = {
   createOrFindTags,
   addTagsToQuestion,
   getTagsByQuestionId,
   getAllTags,
-  removeAllTagsFromQuestion, // Export the new function
+  removeAllTagsFromQuestion,
 };

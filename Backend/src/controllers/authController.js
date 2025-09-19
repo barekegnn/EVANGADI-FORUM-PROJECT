@@ -133,7 +133,6 @@ async function requestPasswordReset(req, res) {
 
     // --- NEW RATE-LIMITING LOGIC ---
     // Check if a reset request has been made recently (e.g., within the last 10 minutes).
-    // This requires the 'password_reset_expires' field to be returned by your findByEmail model function.
     const now = Date.now();
     const tenMinutes = 10 * 60 * 1000;
 

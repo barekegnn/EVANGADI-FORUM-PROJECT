@@ -1,7 +1,7 @@
 const questionModel = require("../models/questionModel");
 const answerModel = require("../models/answerModel");
 const tagModel = require("../models/tagModel");
-const voteModel = require("../models/voteModel"); // Correct import for the vote model
+const voteModel = require("../models/voteModel");
 const notificationModel = require("../models/notificationModel");
 
 // ======================================================================

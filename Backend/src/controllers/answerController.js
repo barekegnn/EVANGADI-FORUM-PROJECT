@@ -1,7 +1,6 @@
-// Import necessary models
-const answerModel = require("../models/answerModel"); // For answer-specific database operations
-const questionModel = require("../models/questionModel"); // To verify question existence/asker
-const voteModel = require("../models/voteModel"); // To get user's vote status for an answer
+const answerModel = require("../models/answerModel");
+const questionModel = require("../models/questionModel");
+const voteModel = require("../models/voteModel");
 const notificationModel = require("../models/notificationModel");
 
 // ======================================================================

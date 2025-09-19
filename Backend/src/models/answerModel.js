@@ -1,5 +1,3 @@
-// backend/src/models/answerModel.js
-
 const pool = require("../config/database");
 
 // ======================================================================
@@ -127,7 +125,6 @@ async function setAcceptedAnswer(answerId, questionId, userId) {
   }
 }
 
-// Export all the functions
 module.exports = {
   createAnswer,
   getAnswersByQuestionId,

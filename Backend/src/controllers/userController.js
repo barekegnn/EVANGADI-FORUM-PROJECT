@@ -1,5 +1,3 @@
-// backend/src/controllers/userController.js
-
 const asyncHandler = require("express-async-handler");
 const userModel = require("../models/userModel");
 

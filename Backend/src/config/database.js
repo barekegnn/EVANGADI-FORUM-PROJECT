@@ -11,8 +11,8 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
   waitForConnections: true, // The pool will queue requests if all connections are in use
-  connectionLimit: 10, // Maximum number of connections the pool will create
-  queueLimit: 0, // No limit on queued requests
+  connectionLimit: 10,
+  queueLimit: 0,
 });
 
 // Immediately test the database connection
@@ -20,14 +20,12 @@ const pool = mysql.createPool({
 pool
   .getConnection()
   .then((connection) => {
-    // If the connection is successful, a message is logged to the console
-    console.log("Successfully connected to the MySQL database!");
-    connection.release(); // Release the connection back to the pool
+   console.log("Successfully connected to the MySQL database!");
+    connection.release();
   })
   .catch((err) => {
-    // If there's an error, log it and terminate the application
     console.error("Error connecting to the MySQL database:", err.message);
-    // The process.exit(1) command stops the Node.js application
+    //stops the Node.js application
     // This is crucial because the app cannot function without a database connection
     process.exit(1);
   });

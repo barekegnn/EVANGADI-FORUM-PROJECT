@@ -1,7 +1,6 @@
 const pool = require("../config/database");
 
 // Notification types: 'QUESTION_CREATED', 'ANSWER_CREATED', etc.
-
 async function createNotification(
   recipientUserId,
   type,

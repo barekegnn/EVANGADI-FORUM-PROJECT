@@ -1,12 +1,9 @@
-// backend/src/middleware/authMiddleware.js
-
 const jwt = require("jsonwebtoken");
 const asyncHandler = require("express-async-handler");
-const userModel = require("../models/userModel"); // Use the correct userModel
+const userModel = require("../models/userModel");
 
 const protect = asyncHandler(async (req, res, next) => {
   let token;
-
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")

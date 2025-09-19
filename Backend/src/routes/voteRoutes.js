@@ -7,10 +7,6 @@ const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// ======================================================================
-// Define Vote Routes (all are protected)
-// ======================================================================
-
 // POST /api/votes/questions/:id - Upvote or downvote a question
 router.post("/questions/:id", protect, voteOnQuestion);
 
