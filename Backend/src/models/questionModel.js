@@ -86,10 +86,23 @@ async function deleteQuestion(questionId, userId) {
   return result.affectedRows > 0;
 }
 
+// ======================================================================
+// 6. Function to increment view count for a question
+// ======================================================================
+async function incrementViewCount(questionId) {
+  const sql = `
+    UPDATE questions 
+    SET view_count = view_count + 1 
+    WHERE id = ?;
+  `;
+  await pool.execute(sql, [questionId]);
+}
+
 module.exports = {
   createQuestion,
   getQuestionById,
   getAllQuestions,
   updateQuestion,
   deleteQuestion,
+  incrementViewCount,
 };

@@ -97,6 +97,9 @@ async function getQuestionById(req, res) {
       return res.status(404).json({ error: "Question not found." });
     }
 
+    // Increment view count for the question
+    await questionModel.incrementViewCount(id);
+
     // Fetch answers and tags concurrently for efficiency
     const [answers, tags] = await Promise.all([
       answerModel.getAnswersByQuestionId(id),

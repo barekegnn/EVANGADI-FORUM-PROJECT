@@ -1,4 +1,5 @@
 const pool = require("../config/database");
+const userModel = require("./userModel");
 
 // ======================================================================
 // 1. Function to get a user's vote on a specific question
@@ -79,6 +80,19 @@ async function voteOnQuestion(userId, questionId, voteType) {
       [voteChange, questionId]
     );
 
+    // Update reputation for the question author (if vote change occurred)
+    if (voteChange !== 0) {
+      const [questionRows] = await connection.execute(
+        "SELECT user_id FROM questions WHERE id = ?",
+        [questionId]
+      );
+      if (questionRows.length > 0) {
+        const questionAuthorId = questionRows[0].user_id;
+        const reputationChange = voteChange * 2; // +2 for upvote, -2 for downvote
+        await userModel.updateReputation(questionAuthorId, reputationChange);
+      }
+    }
+
     await connection.commit();
     return { success: true, newVoteType: finalVoteType };
   } catch (error) {
@@ -132,6 +146,19 @@ async function voteOnAnswer(userId, answerId, voteType) {
       "UPDATE answers SET vote_count = vote_count + ? WHERE id = ?",
       [voteChange, answerId]
     );
+
+    // Update reputation for the answer author (if vote change occurred)
+    if (voteChange !== 0) {
+      const [answerRows] = await connection.execute(
+        "SELECT user_id FROM answers WHERE id = ?",
+        [answerId]
+      );
+      if (answerRows.length > 0) {
+        const answerAuthorId = answerRows[0].user_id;
+        const reputationChange = voteChange * 3; // +3 for upvote, -3 for downvote (answers worth more)
+        await userModel.updateReputation(answerAuthorId, reputationChange);
+      }
+    }
 
     await connection.commit();
     return { success: true, newVoteType: finalVoteType };

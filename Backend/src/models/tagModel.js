@@ -20,8 +20,8 @@ async function createOrFindTags(tagNames) {
         tagIds.push(existingRows[0].id);
       } else {
         const [result] = await connection.execute(
-          "INSERT INTO tags (name) VALUES (?)",
-          [normalizedName]
+          "INSERT INTO tags (name, description) VALUES (?, ?)",
+          [normalizedName, `Tag for ${normalizedName}`]
         );
         tagIds.push(result.insertId);
       }
@@ -57,7 +57,7 @@ async function addTagsToQuestion(questionId, tagIds) {
 async function getTagsByQuestionId(questionId) {
   try {
     const [rows] = await pool.execute(
-      `SELECT t.id, t.name
+      `SELECT t.id, t.name, t.description
              FROM tags t
              JOIN question_tags qt ON t.id = qt.tag_id
              WHERE qt.question_id = ?`,
@@ -72,7 +72,7 @@ async function getTagsByQuestionId(questionId) {
 // 4. Function to get all existing tags from the database.
 async function getAllTags() {
   try {
-    const [rows] = await pool.execute("SELECT id, name FROM tags");
+    const [rows] = await pool.execute("SELECT id, name, description FROM tags");
     return rows;
   } catch (error) {
     throw error;

@@ -1,4 +1,5 @@
 const pool = require("../config/database");
+const userModel = require("./userModel");
 
 // ======================================================================
 // 1. Function to create a new answer
@@ -111,6 +112,16 @@ async function setAcceptedAnswer(answerId, questionId, userId) {
       throw new Error(
         "Failed to update the answer. Answer may not exist for this question."
       );
+    }
+
+    // Step 5: Award reputation bonus to the answer author
+    const [answerRows] = await connection.execute(
+      "SELECT user_id FROM answers WHERE id = ?",
+      [answerId]
+    );
+    if (answerRows.length > 0) {
+      const answerAuthorId = answerRows[0].user_id;
+      await userModel.updateReputation(answerAuthorId, 10); // +10 reputation for accepted answer
     }
 
     // Commit the transaction if all steps were successful.
