@@ -767,28 +767,35 @@ async function getQuestions() {
 }
 async function getQuestionById(id) {
     const response = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$axios$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].get(`/questions/${id}`);
-    const { question, answers, tags } = response.data;
+    // The backend returns a flat structure
+    const questionData = response.data;
+    const answers = questionData.answers || [];
+    const tags = questionData.tags || [];
+    // Check if questionData exists
+    if (!questionData) {
+        throw new Error("Question not found");
+    }
     // Transform the question data
     const transformedQuestion = {
-        id: question.id,
-        author: question.author_username,
+        id: questionData.id,
+        author: questionData.author_username,
         avatarUrl: "/placeholder-user.jpg",
-        date: question.created_at,
-        title: question.title,
-        content: question.content,
-        votes: question.vote_count || 0,
-        views: question.view_count || 0,
-        tags: tags || [],
+        date: questionData.created_at,
+        title: questionData.title,
+        content: questionData.content,
+        votes: questionData.vote_count || 0,
+        views: questionData.view_count || 0,
+        tags: tags.map((tag)=>tag.name || tag) || [],
         answers: []
     };
     // Transform the answers data
     const transformedAnswers = answers.map((answer)=>({
-            id: answer.answer_id,
-            author: answer.username,
+            id: answer.answer_id || answer.id,
+            author: answer.username || answer.author || "Unknown",
             avatarUrl: "/placeholder-user.jpg",
             date: answer.created_at,
             content: answer.content,
-            votes: answer.votes || 0,
+            votes: answer.votes || answer.vote_count || 0,
             isAccepted: answer.is_accepted_answer || false
         }));
     const sortedAnswers = [
@@ -796,7 +803,7 @@ async function getQuestionById(id) {
     ].sort((a, b)=>{
         if (a.isAccepted && !b.isAccepted) return -1;
         if (!a.isAccepted && b.isAccepted) return 1;
-        return b.votes - a.votes;
+        return (b.votes || 0) - (a.votes || 0);
     });
     return {
         question: transformedQuestion,
@@ -819,19 +826,21 @@ async function addAnswer(questionId, content) {
     return response.data;
 }
 async function voteOnQuestion(questionId, voteType) {
-    const response = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$axios$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].post(`/questions/${questionId}/vote`, {
-        voteType
+    const numericVoteType = voteType === "up" ? 1 : -1;
+    const response = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$axios$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].post(`/votes/questions/${questionId}`, {
+        voteType: numericVoteType
     });
     return response.data;
 }
 async function voteOnAnswer(questionId, answerId, voteType) {
-    const response = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$axios$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].post(`/questions/${questionId}/answers/${answerId}/vote`, {
-        voteType
+    const numericVoteType = voteType === "up" ? 1 : -1;
+    const response = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$axios$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].post(`/votes/answers/${answerId}`, {
+        voteType: numericVoteType
     });
     return response.data;
 }
 async function acceptAnswer(questionId, answerId) {
-    const response = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$axios$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].post(`/questions/${questionId}/answers/${answerId}/accept`);
+    const response = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$axios$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].put(`/answers/${answerId}/accept`);
     return response.data;
 }
 }),

@@ -3,5 +3,6 @@
   "/dashboard/page": "app/dashboard/page.js",
   "/page": "app/page.js",
   "/profile/page": "app/profile/page.js",
-  "/questions/[id]/page": "app/questions/[id]/page.js"
+  "/questions/[id]/page": "app/questions/[id]/page.js",
+  "/questions/ask/page": "app/questions/ask/page.js"
 }
