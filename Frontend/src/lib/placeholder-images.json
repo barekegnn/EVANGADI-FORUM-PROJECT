@@ -1,0 +1,64 @@
+{
+  "placeholderImages": [
+    {
+      "id": "user-avatar",
+      "description": "User avatar for header",
+      "imageUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxtYWxlJTIwcHJvZmlsZXxlbnwwfHx8fDE3NTkwODA2NjB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "male profile"
+    },
+    {
+      "id": "user-profile-lg",
+      "description": "Large user profile picture",
+      "imageUrl": "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxibGFjayUyMG1hbiUyMHByb2ZpbGV8ZW58MHx8fHwxNzU5MjM0MjMzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "black man profile"
+    },
+    {
+      "id": "user-1",
+      "description": "Avatar for Dr. Aisha Ahmed",
+      "imageUrl": "https://images.unsplash.com/photo-1638202993928-7267aad84c31?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHx3b21hbiUyMGRvY3RvcnxlbnwwfHx8fDE3NTg5NTk3MDB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman doctor"
+    },
+    {
+      "id": "user-2",
+      "description": "Avatar for Samuel Getachew",
+      "imageUrl": "https://images.unsplash.com/photo-1587723897403-dee3f10282f2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYW4lMjBwZXJzb258ZW58MHx8fHwxNzU4ODg5NDYyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man person"
+    },
+    {
+      "id": "user-3",
+      "description": "Avatar for Fana Kebede",
+      "imageUrl": "https://images.unsplash.com/photo-1683972449580-7e0837dee436?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHx3b21hbiUyMHBlcnNvbnxlbnwwfHx8fDE3NTg5MzM1Njh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman person"
+    },
+    {
+      "id": "user-4",
+      "description": "Avatar for Dr. Almaz Tekle",
+      "imageUrl": "https://images.unsplash.com/photo-1659353887019-b142198f2668?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx3b21hbiUyMGRvY3RvciUyMHByb2Zlc3Npb25hbHxlbnwwfHx8fDE3NTg5OTcxMDV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman doctor professional"
+    },
+    {
+      "id": "user-5",
+      "description": "Avatar for Daniel Bekele",
+      "imageUrl": "https://images.unsplash.com/photo-1616104164417-1f102e20839f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxtYW4lMjBmYXJtZXJ8ZW58MHx8fHwxNzU4OTk3MTA1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man farmer"
+    },
+    {
+      "id": "user-solomon",
+      "description": "Avatar for Solomon K",
+      "imageUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxtYWxlJTIwcHJvZmlsZXxlbnwwfHx8fDE3NTkwODA2NjB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "male profile"
+    },
+    {
+      "id": "user-david",
+      "description": "Avatar for David T.",
+      "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxtYWxlJTIwcHJvZmlsZXxlbnwwfHx8fDE3NTkwODA2NjB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "male profile"
+    },
+    {
+      "id": "user-selamawit",
+      "description": "Avatar for Selamawit G.",
+      "imageUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx3b21hbiUyMHByb2ZpbGV8ZW58MHx8fHwxNzU5MDgwNzMwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman profile"
+    }
+  ]
+}
