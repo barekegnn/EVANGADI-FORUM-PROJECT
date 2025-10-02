@@ -324,17 +324,27 @@ function ForgotPasswordForm() {
             email: ""
         }
     });
+    // ... existing code ...
     const onSubmit = (values)=>{
-        startTransition(()=>{
-            // Mock API call for password reset link
-            console.log("Sending password reset link to:", values.email);
-            toast({
-                title: "Success",
-                description: "If an account exists with that email, a reset link has been sent."
-            });
-            router.push("/");
+        startTransition(async ()=>{
+            try {
+                await requestPasswordReset(values.email);
+                toast({
+                    title: "Success",
+                    description: "If an account exists with that email, a reset link has been sent."
+                });
+                router.push("/");
+            } catch (error) {
+                console.error("Error requesting password reset:", error);
+                toast({
+                    title: "Error",
+                    description: "Failed to send reset link. Please try again.",
+                    variant: "destructive"
+                });
+            }
         });
     };
+    // ... existing code ...
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "w-full max-w-sm bg-card p-8 rounded-lg shadow-xl",
         children: [
@@ -346,7 +356,7 @@ function ForgotPasswordForm() {
                         children: "Forgot Password?"
                     }, void 0, false, {
                         fileName: "[project]/src/components/auth/ForgotPasswordForm.tsx",
-                        lineNumber: 57,
+                        lineNumber: 69,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -354,13 +364,13 @@ function ForgotPasswordForm() {
                         children: "Enter your email address to receive a password reset link."
                     }, void 0, false, {
                         fileName: "[project]/src/components/auth/ForgotPasswordForm.tsx",
-                        lineNumber: 58,
+                        lineNumber: 70,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/auth/ForgotPasswordForm.tsx",
-                lineNumber: 56,
+                lineNumber: 68,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Form"], {
@@ -378,7 +388,7 @@ function ForgotPasswordForm() {
                                             children: "Email Address"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/auth/ForgotPasswordForm.tsx",
-                                            lineNumber: 69,
+                                            lineNumber: 81,
                                             columnNumber: 17
                                         }, void 0),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormControl"], {
@@ -389,28 +399,28 @@ function ForgotPasswordForm() {
                                                 type: "email"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/auth/ForgotPasswordForm.tsx",
-                                                lineNumber: 71,
+                                                lineNumber: 83,
                                                 columnNumber: 19
                                             }, void 0)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/auth/ForgotPasswordForm.tsx",
-                                            lineNumber: 70,
+                                            lineNumber: 82,
                                             columnNumber: 17
                                         }, void 0),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$form$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["FormMessage"], {}, void 0, false, {
                                             fileName: "[project]/src/components/auth/ForgotPasswordForm.tsx",
-                                            lineNumber: 78,
+                                            lineNumber: 90,
                                             columnNumber: 17
                                         }, void 0)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/auth/ForgotPasswordForm.tsx",
-                                    lineNumber: 68,
+                                    lineNumber: 80,
                                     columnNumber: 15
                                 }, void 0)
                         }, void 0, false, {
                             fileName: "[project]/src/components/auth/ForgotPasswordForm.tsx",
-                            lineNumber: 64,
+                            lineNumber: 76,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -422,25 +432,25 @@ function ForgotPasswordForm() {
                                     className: "mr-2 h-4 w-4 animate-spin"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/auth/ForgotPasswordForm.tsx",
-                                    lineNumber: 87,
+                                    lineNumber: 99,
                                     columnNumber: 27
                                 }, this),
                                 "Send Reset Link"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/auth/ForgotPasswordForm.tsx",
-                            lineNumber: 82,
+                            lineNumber: 94,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/auth/ForgotPasswordForm.tsx",
-                    lineNumber: 63,
+                    lineNumber: 75,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/auth/ForgotPasswordForm.tsx",
-                lineNumber: 62,
+                lineNumber: 74,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -456,24 +466,24 @@ function ForgotPasswordForm() {
                             children: "Log in"
                         }, void 0, false, {
                             fileName: "[project]/src/components/auth/ForgotPasswordForm.tsx",
-                            lineNumber: 95,
+                            lineNumber: 107,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/auth/ForgotPasswordForm.tsx",
-                    lineNumber: 93,
+                    lineNumber: 105,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/auth/ForgotPasswordForm.tsx",
-                lineNumber: 92,
+                lineNumber: 104,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/auth/ForgotPasswordForm.tsx",
-        lineNumber: 55,
+        lineNumber: 67,
         columnNumber: 5
     }, this);
 }

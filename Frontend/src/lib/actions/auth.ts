@@ -51,3 +51,18 @@ export async function login(values: z.infer<typeof LoginSchema>) {
     return { error: "Something went wrong. Please try again." };
   }
 }
+
+// Added function to request password reset
+export async function requestPasswordReset(email: string) {
+  try {
+    const response = await api.post("/auth/request-password-reset", { email });
+    return {
+      success: response.data.message || "Password reset link sent successfully.",
+    };
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return { error: error.response.data.message || "Failed to send reset link." };
+    }
+    return { error: "Something went wrong. Please try again." };
+  }
+}

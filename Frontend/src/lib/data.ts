@@ -143,3 +143,14 @@ export async function acceptAnswer(questionId: string, answerId: string) {
   return response.data;
 }
 
+// ... existing code ...
+
+export async function requestPasswordReset(email: string) {
+  const response = await api.post("/auth/request-password-reset", { email });
+  return response.data;
+}
+
+export async function resetPassword(token: string, newPassword: string) {
+  const response = await api.post("/auth/reset-password", { token, newPassword });
+  return response.data;
+}

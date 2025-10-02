@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { resetPassword as resetUserPassword } from "@/lib/data";
 
 const ResetPasswordSchema = z
   .object({
@@ -52,8 +53,10 @@ export function ResetPasswordForm() {
     },
   });
 
+  // ... existing code ...
+
   const onSubmit = (values: z.infer<typeof ResetPasswordSchema>) => {
-    startTransition(() => {
+    startTransition(async () => {
       if (!token) {
         toast({
           title: "Missing Token",
@@ -62,20 +65,28 @@ export function ResetPasswordForm() {
         });
         return;
       }
-      // Mock API call to reset password
-      console.log(
-        "Resetting password with token:",
-        token,
-        "and new password:",
-        values.password
-      );
-      toast({
-        title: "Success",
-        description: "Your password has been reset successfully.",
-      });
-      router.push("/");
+
+      try {
+        await resetUserPassword(token, values.password);
+        toast({
+          title: "Success",
+          description: "Your password has been reset successfully.",
+        });
+        router.push("/");
+      } catch (error: any) {
+        console.error("Error resetting password:", error);
+        toast({
+          title: "Error",
+          description:
+            error.response?.data?.message ||
+            "Failed to reset password. Please try again.",
+          variant: "destructive",
+        });
+      }
     });
   };
+
+  // ... existing code ...
 
   return (
     <div className="w-full max-w-sm">

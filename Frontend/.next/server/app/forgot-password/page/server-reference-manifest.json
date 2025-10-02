@@ -1,4 +1,20 @@
 {
-  "node": {},
+  "node": {
+    "40ad47c62668b7633373542e24e89fc53fb451ca4b": {
+      "workers": {
+        "app/forgot-password/page": {
+          "moduleId": "[project]/.next-internal/server/app/forgot-password/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/auth.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "requestPasswordReset",
+          "filename": "src/lib/actions/auth.ts"
+        }
+      },
+      "layer": {
+        "app/forgot-password/page": "action-browser"
+      },
+      "exportedName": "requestPasswordReset",
+      "filename": "src/lib/actions/auth.ts"
+    }
+  },
   "edge": {}
 }

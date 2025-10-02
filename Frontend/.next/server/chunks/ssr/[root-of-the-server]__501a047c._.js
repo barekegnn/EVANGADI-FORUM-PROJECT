@@ -207,6 +207,10 @@ __turbopack_context__.s([
     ()=>getQuestionById,
     "getQuestions",
     ()=>getQuestions,
+    "requestPasswordReset",
+    ()=>requestPasswordReset,
+    "resetPassword",
+    ()=>resetPassword,
     "voteOnAnswer",
     ()=>voteOnAnswer,
     "voteOnQuestion",
@@ -306,6 +310,19 @@ async function voteOnAnswer(questionId, answerId, voteType) {
 }
 async function acceptAnswer(questionId, answerId) {
     const response = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$axios$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].put(`/answers/${answerId}/accept`);
+    return response.data;
+}
+async function requestPasswordReset(email) {
+    const response = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$axios$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].post("/auth/request-password-reset", {
+        email
+    });
+    return response.data;
+}
+async function resetPassword(token, newPassword) {
+    const response = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$axios$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].post("/auth/reset-password", {
+        token,
+        newPassword
+    });
     return response.data;
 }
 }),

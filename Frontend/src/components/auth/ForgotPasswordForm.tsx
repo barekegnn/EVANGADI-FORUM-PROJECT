@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { requestPasswordReset } from "@/lib/actions/auth";
 
 const ForgotPasswordSchema = z.object({
   email: z.string().email({
@@ -39,15 +40,32 @@ export function ForgotPasswordForm() {
   });
 
   const onSubmit = (values: z.infer<typeof ForgotPasswordSchema>) => {
-    startTransition(() => {
-      // Mock API call for password reset link
-      console.log("Sending password reset link to:", values.email);
-      toast({
-        title: "Success",
-        description:
-          "If an account exists with that email, a reset link has been sent.",
-      });
-      router.push("/");
+    startTransition(async () => {
+      try {
+        const result = await requestPasswordReset(values.email);
+        if (result.error) {
+          toast({
+            title: "Error",
+            description: result.error,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Success",
+            description:
+              result.success ||
+              "If an account exists with that email, a reset link has been sent.",
+          });
+          router.push("/");
+        }
+      } catch (error) {
+        console.error("Error requesting password reset:", error);
+        toast({
+          title: "Error",
+          description: "Failed to send reset link. Please try again.",
+          variant: "destructive",
+        });
+      }
     });
   };
 
