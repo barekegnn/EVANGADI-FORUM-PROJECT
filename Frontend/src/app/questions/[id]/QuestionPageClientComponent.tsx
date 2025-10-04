@@ -12,6 +12,8 @@ import {
   voteOnAnswer,
   acceptAnswer,
 } from "@/lib/data";
+import { isAuthenticated } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 interface QuestionPageClientComponentProps {
   question: Question;
@@ -26,6 +28,7 @@ export function QuestionPageClientComponent({
 }: QuestionPageClientComponentProps) {
   const [answers, setAnswers] = useState<Answer[]>(initialAnswers);
   const { toast } = useToast();
+  const router = useRouter();
 
   const fetchData = async () => {
     try {
@@ -43,6 +46,17 @@ export function QuestionPageClientComponent({
   };
 
   const handleAnswerSubmit = async (content: string) => {
+    // Check if user is authenticated
+    if (!isAuthenticated()) {
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to submit an answer.",
+        variant: "destructive",
+      });
+      router.push("/");
+      return;
+    }
+
     try {
       await addAnswer(questionId, content);
       toast({
@@ -70,6 +84,17 @@ export function QuestionPageClientComponent({
     itemId: string,
     voteType: "up" | "down"
   ) => {
+    // Check if user is authenticated
+    if (!isAuthenticated()) {
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to vote.",
+        variant: "destructive",
+      });
+      router.push("/");
+      return;
+    }
+
     try {
       if (type === "question") {
         await voteOnQuestion(questionId, voteType);
@@ -82,17 +107,29 @@ export function QuestionPageClientComponent({
         title: "Vote Recorded",
         description: "Please refresh the page to see the updated vote count.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to vote:", error);
+      const message = error.message || "Your vote could not be recorded.";
       toast({
         title: "Error",
-        description: "Your vote could not be recorded.",
+        description: message,
         variant: "destructive",
       });
     }
   };
 
   const handleAcceptAnswer = async (answerId: string) => {
+    // Check if user is authenticated
+    if (!isAuthenticated()) {
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to accept an answer.",
+        variant: "destructive",
+      });
+      router.push("/");
+      return;
+    }
+
     try {
       await acceptAnswer(questionId, answerId);
       toast({

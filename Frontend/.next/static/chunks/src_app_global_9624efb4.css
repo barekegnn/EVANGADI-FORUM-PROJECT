@@ -876,6 +876,10 @@ body {
   width: 2.75rem;
 }
 
+.w-12 {
+  width: 3rem;
+}
+
 .w-14 {
   width: 3.5rem;
 }
@@ -1227,6 +1231,10 @@ body {
   white-space: nowrap;
 }
 
+.rounded {
+  border-radius: .25rem;
+}
+
 .rounded-\[2px\] {
   border-radius: 2px;
 }
@@ -1271,6 +1279,10 @@ body {
   border-bottom-width: 1px;
 }
 
+.border-b-2 {
+  border-bottom-width: 2px;
+}
+
 .border-l {
   border-left-width: 1px;
 }
@@ -1281,6 +1293,10 @@ body {
 
 .border-t {
   border-top-width: 1px;
+}
+
+.border-t-2 {
+  border-top-width: 2px;
 }
 
 .border-dashed {

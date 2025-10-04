@@ -52,8 +52,10 @@ export function LoginForm() {
             title: "Success",
             description: data.success,
           });
+          // Store the token
           localStorage.setItem("authToken", data.token);
-          router.push("/dashboard");
+          // Force a refresh of the page to ensure all components update
+          window.location.href = "/dashboard";
         }
       });
     });

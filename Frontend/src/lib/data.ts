@@ -110,17 +110,23 @@ export async function addAnswer(questionId: string, content: string) {
   return response.data;
 }
 
-// ... existing code ...
-
 export async function voteOnQuestion(
   questionId: string,
   voteType: "up" | "down"
 ) {
-  const numericVoteType = voteType === "up" ? 1 : -1;
-  const response = await api.post(`/votes/questions/${questionId}`, {
-    voteType: numericVoteType,
-  });
-  return response.data;
+  try {
+    const numericVoteType = voteType === "up" ? 1 : -1;
+    const response = await api.post(`/votes/questions/${questionId}`, {
+      voteType: numericVoteType,
+    });
+    return response.data;
+  } catch (error: any) {
+    // Handle authentication errors
+    if (error.response && error.response.status === 401) {
+      throw new Error("You must be logged in to vote on questions.");
+    }
+    throw error;
+  }
 }
 
 export async function voteOnAnswer(
@@ -128,22 +134,25 @@ export async function voteOnAnswer(
   answerId: string,
   voteType: "up" | "down"
 ) {
-  const numericVoteType = voteType === "up" ? 1 : -1;
-  const response = await api.post(
-    `/votes/answers/${answerId}`,
-    { voteType: numericVoteType }
-  );
-  return response.data;
+  try {
+    const numericVoteType = voteType === "up" ? 1 : -1;
+    const response = await api.post(`/votes/answers/${answerId}`, {
+      voteType: numericVoteType,
+    });
+    return response.data;
+  } catch (error: any) {
+    // Handle authentication errors
+    if (error.response && error.response.status === 401) {
+      throw new Error("You must be logged in to vote on answers.");
+    }
+    throw error;
+  }
 }
 
 export async function acceptAnswer(questionId: string, answerId: string) {
-  const response = await api.put(
-    `/answers/${answerId}/accept`
-  );
+  const response = await api.put(`/answers/${answerId}/accept`);
   return response.data;
 }
-
-// ... existing code ...
 
 export async function requestPasswordReset(email: string) {
   const response = await api.post("/auth/request-password-reset", { email });
@@ -151,6 +160,9 @@ export async function requestPasswordReset(email: string) {
 }
 
 export async function resetPassword(token: string, newPassword: string) {
-  const response = await api.post("/auth/reset-password", { token, newPassword });
+  const response = await api.post("/auth/reset-password", {
+    token,
+    newPassword,
+  });
   return response.data;
 }

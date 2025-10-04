@@ -119,6 +119,14 @@ api.interceptors.request.use((config)=>{
 }, (error)=>{
     return Promise.reject(error);
 });
+api.interceptors.response.use((response)=>{
+    return response;
+}, (error)=>{
+    // Handle 401 errors (unauthorized) by redirecting to login
+    if ("undefined" !== "undefined" && error.response?.status === 401) //TURBOPACK unreachable
+    ;
+    return Promise.reject(error);
+});
 const __TURBOPACK__default__export__ = api;
 }),
 "[project]/src/lib/actions/auth.ts [app-rsc] (ecmascript)", ((__turbopack_context__) => {

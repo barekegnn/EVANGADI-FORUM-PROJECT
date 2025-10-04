@@ -8,6 +8,7 @@ import { FloatingActionButton } from "@/components/questions/FloatingActionButto
 import { getQuestions } from "@/lib/data";
 import Link from "next/link";
 import { DashboardClientComponent } from "@/app/dashboard/DashboardClientComponent";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 type SortType = "Newest First" | "Most Popular" | "Unanswered";
 
@@ -23,13 +24,15 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="bg-background min-h-screen flex flex-col">
-      <div className="flex-grow p-4 pb-20">
-        {/* Client Component handles search and sorting */}
-        <DashboardClientComponent initialQuestions={allQuestions} />
+    <ProtectedRoute>
+      <div className="bg-background min-h-screen flex flex-col">
+        <div className="flex-grow p-4 pb-20">
+          {/* Client Component handles search and sorting */}
+          <DashboardClientComponent initialQuestions={allQuestions} />
+        </div>
+        <FloatingActionButton />
+        <BottomNav />
       </div>
-      <FloatingActionButton />
-      <BottomNav />
-    </div>
+    </ProtectedRoute>
   );
 }
