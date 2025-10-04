@@ -547,6 +547,8 @@ __turbopack_context__.s([
     ()=>getNotifications
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$axios$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/axios.ts [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$formatDistanceToNow$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/formatDistanceToNow.mjs [app-client] (ecmascript)");
+;
 ;
 async function getNotifications() {
     try {
@@ -554,11 +556,59 @@ async function getNotifications() {
         if (!token) return [];
         // Use the correct endpoint that exists in the backend
         const response = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$axios$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].get("/notifications/unread");
-        return response.data.notifications || [];
+        const backendNotifications = response.data.notifications || [];
+        // Transform backend notifications to frontend format
+        return backendNotifications.map((notification)=>({
+                id: notification.id,
+                type: mapNotificationType(notification.type),
+                title: notification.message || "Notification",
+                description: formatDescription(notification.context),
+                time: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$formatDistanceToNow$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["formatDistanceToNow"])(new Date(notification.created_at), {
+                    addSuffix: true
+                }),
+                read: false
+            }));
     } catch (error) {
         console.error("Error fetching notifications:", error);
         return [];
     }
+}
+// Map backend notification types to frontend types
+function mapNotificationType(backendType) {
+    const typeMap = {
+        ANSWER_CREATED: "answer",
+        QUESTION_CREATED: "comment",
+        MENTION: "mention",
+        REPUTATION: "reputation",
+        SUMMARY: "summary",
+        FOLLOWER: "follower"
+    };
+    return typeMap[backendType] || "comment";
+}
+// Format the description from context, handling objects and other types
+function formatDescription(context) {
+    if (!context) return "";
+    // If context is an object, convert it to a readable string
+    if (typeof context === "object") {
+        // Handle specific context types
+        if (context.tags && Array.isArray(context.tags)) {
+            return "Tags: ".concat(context.tags.join(", "));
+        }
+        if (context.questionId) {
+            return "Question ID: ".concat(context.questionId);
+        }
+        if (context.authorId) {
+            return "Author ID: ".concat(context.authorId);
+        }
+        // Generic object handling
+        return JSON.stringify(context, null, 2);
+    }
+    // If context is already a string, return it
+    if (typeof context === "string") {
+        return context;
+    }
+    // Convert other types to string
+    return String(context);
 }
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);

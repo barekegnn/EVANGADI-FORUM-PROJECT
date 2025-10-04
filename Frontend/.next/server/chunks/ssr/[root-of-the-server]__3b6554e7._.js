@@ -522,6 +522,7 @@ __turbopack_context__.s([
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$axios$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/axios.ts [app-ssr] (ecmascript)");
 ;
+;
 async function getNotifications() {
     try {
         const token = ("TURBOPACK compile-time falsy", 0) ? "TURBOPACK unreachable" : null;
@@ -530,10 +531,48 @@ async function getNotifications() {
         ;
         // Use the correct endpoint that exists in the backend
         const response = undefined;
+        const backendNotifications = undefined;
     } catch (error) {
         console.error("Error fetching notifications:", error);
         return [];
     }
+}
+// Map backend notification types to frontend types
+function mapNotificationType(backendType) {
+    const typeMap = {
+        ANSWER_CREATED: "answer",
+        QUESTION_CREATED: "comment",
+        MENTION: "mention",
+        REPUTATION: "reputation",
+        SUMMARY: "summary",
+        FOLLOWER: "follower"
+    };
+    return typeMap[backendType] || "comment";
+}
+// Format the description from context, handling objects and other types
+function formatDescription(context) {
+    if (!context) return "";
+    // If context is an object, convert it to a readable string
+    if (typeof context === "object") {
+        // Handle specific context types
+        if (context.tags && Array.isArray(context.tags)) {
+            return `Tags: ${context.tags.join(", ")}`;
+        }
+        if (context.questionId) {
+            return `Question ID: ${context.questionId}`;
+        }
+        if (context.authorId) {
+            return `Author ID: ${context.authorId}`;
+        }
+        // Generic object handling
+        return JSON.stringify(context, null, 2);
+    }
+    // If context is already a string, return it
+    if (typeof context === "string") {
+        return context;
+    }
+    // Convert other types to string
+    return String(context);
 }
 }),
 "[project]/src/lib/placeholder-images.json (json)", ((__turbopack_context__) => {
