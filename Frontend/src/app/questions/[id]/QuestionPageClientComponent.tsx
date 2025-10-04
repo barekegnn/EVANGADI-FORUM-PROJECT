@@ -12,8 +12,11 @@ import {
   voteOnAnswer,
   acceptAnswer,
 } from "@/lib/data";
-import { isAuthenticated } from "@/lib/utils";
+import { isAuthenticated, getCurrentUser } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface QuestionPageClientComponentProps {
   question: Question;
@@ -29,6 +32,11 @@ export function QuestionPageClientComponent({
   const [answers, setAnswers] = useState<Answer[]>(initialAnswers);
   const { toast } = useToast();
   const router = useRouter();
+  const currentUser = getCurrentUser();
+
+  // Check if the current user is the author of the question
+  const isQuestionAuthor =
+    currentUser && currentUser.username === question.author;
 
   const fetchData = async () => {
     try {
@@ -168,14 +176,27 @@ export function QuestionPageClientComponent({
               answer={answer}
               onVote={(voteType) => handleVote("answer", answer.id, voteType)}
               onAccept={() => handleAcceptAnswer(answer.id)}
-              isQuestionAuthor={true} // This should be determined by comparing the logged-in user's ID with the question author's ID
+              isQuestionAuthor={isQuestionAuthor || false}
             />
           ))}
         </div>
       </div>
 
       <div className="mt-8">
-        <AnswerForm onSubmit={handleAnswerSubmit} />
+        {isQuestionAuthor ? (
+          <Card className="p-4">
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Cannot Post Answer</AlertTitle>
+              <AlertDescription>
+                As the author of this question, you cannot post an answer to
+                your own question.
+              </AlertDescription>
+            </Alert>
+          </Card>
+        ) : (
+          <AnswerForm onSubmit={handleAnswerSubmit} />
+        )}
       </div>
     </>
   );

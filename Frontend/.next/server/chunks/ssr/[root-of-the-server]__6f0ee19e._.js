@@ -168,6 +168,8 @@ function useToast() {
 __turbopack_context__.s([
     "cn",
     ()=>cn,
+    "getCurrentUser",
+    ()=>getCurrentUser,
     "isAuthenticated",
     ()=>isAuthenticated,
     "redirectToLogin",
@@ -189,6 +191,12 @@ function isAuthenticated() {
 function redirectToLogin() {
     if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
     ;
+}
+function getCurrentUser() {
+    if ("TURBOPACK compile-time truthy", 1) return null;
+    //TURBOPACK unreachable
+    ;
+    const token = undefined;
 }
 }),
 "[project]/src/components/ui/toast.tsx [app-ssr] (ecmascript)", ((__turbopack_context__) => {

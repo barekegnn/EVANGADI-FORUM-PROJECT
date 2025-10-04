@@ -16,3 +16,26 @@ export function redirectToLogin(): void {
     window.location.href = "/";
   }
 }
+
+// Function to decode JWT token and get user information
+export function getCurrentUser(): { id: string; username: string } | null {
+  if (typeof window === "undefined") return null;
+
+  const token = localStorage.getItem("authToken");
+  if (!token) return null;
+
+  try {
+    // Split the token and decode the payload
+    const payload = token.split(".")[1];
+    const decodedPayload = atob(payload);
+    const user = JSON.parse(decodedPayload);
+
+    return {
+      id: user.id,
+      username: user.username,
+    };
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    return null;
+  }
+}

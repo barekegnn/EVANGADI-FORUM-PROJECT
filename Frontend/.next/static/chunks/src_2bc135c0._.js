@@ -173,6 +173,8 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 __turbopack_context__.s([
     "cn",
     ()=>cn,
+    "getCurrentUser",
+    ()=>getCurrentUser,
     "isAuthenticated",
     ()=>isAuthenticated,
     "redirectToLogin",
@@ -197,6 +199,25 @@ function isAuthenticated() {
 function redirectToLogin() {
     if ("TURBOPACK compile-time truthy", 1) {
         window.location.href = "/";
+    }
+}
+function getCurrentUser() {
+    if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+    ;
+    const token = localStorage.getItem("authToken");
+    if (!token) return null;
+    try {
+        // Split the token and decode the payload
+        const payload = token.split(".")[1];
+        const decodedPayload = atob(payload);
+        const user = JSON.parse(decodedPayload);
+        return {
+            id: user.id,
+            username: user.username
+        };
+    } catch (error) {
+        console.error("Error decoding token:", error);
+        return null;
     }
 }
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {

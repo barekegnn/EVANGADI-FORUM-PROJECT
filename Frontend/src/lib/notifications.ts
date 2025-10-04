@@ -21,8 +21,9 @@ export async function getNotifications(): Promise<Notification[]> {
       typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
     if (!token) return [];
 
-    const response = await api.get("/notifications");
-    return response.data;
+    // Use the correct endpoint that exists in the backend
+    const response = await api.get("/notifications/unread");
+    return response.data.notifications || [];
   } catch (error) {
     console.error("Error fetching notifications:", error);
     return [];

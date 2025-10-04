@@ -493,73 +493,8 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }
 }),
-"[project]/src/lib/axios.ts [app-client] (ecmascript)", ((__turbopack_context__) => {
-"use strict";
+"[project]/src/lib/notifications.ts [app-client] (ecmascript)", ((__turbopack_context__, module, exports) => {
 
-__turbopack_context__.s([
-    "default",
-    ()=>__TURBOPACK__default__export__
-]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$polyfills$2f$process$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = /*#__PURE__*/ __turbopack_context__.i("[project]/node_modules/next/dist/build/polyfills/process.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$lib$2f$axios$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/axios/lib/axios.js [app-client] (ecmascript)");
-;
-const API_URL = ("TURBOPACK compile-time value", "http://localhost:5000/api") || "http://localhost:5001/api";
-const api = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$lib$2f$axios$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].create({
-    baseURL: API_URL,
-    headers: {
-        "Content-Type": "application/json"
-    }
-});
-api.interceptors.request.use((config)=>{
-    if ("TURBOPACK compile-time truthy", 1) {
-        const token = localStorage.getItem("authToken");
-        if (token) {
-            config.headers.Authorization = "Bearer ".concat(token);
-        }
-    }
-    return config;
-}, (error)=>{
-    return Promise.reject(error);
-});
-api.interceptors.response.use((response)=>{
-    return response;
-}, (error)=>{
-    var _error_response;
-    // Handle 401 errors (unauthorized) by redirecting to login
-    if ("object" !== "undefined" && ((_error_response = error.response) === null || _error_response === void 0 ? void 0 : _error_response.status) === 401) {
-        // Remove the token if it's invalid
-        localStorage.removeItem("authToken");
-    // Note: We can't use router.push here because this is not a React component
-    // The ProtectedRoute component will handle the actual redirection
-    }
-    return Promise.reject(error);
-});
-const __TURBOPACK__default__export__ = api;
-if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
-    __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
-}
-}),
-"[project]/src/lib/notifications.ts [app-client] (ecmascript)", ((__turbopack_context__) => {
-"use strict";
-
-__turbopack_context__.s([
-    "getNotifications",
-    ()=>getNotifications
-]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$axios$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/axios.ts [app-client] (ecmascript)");
-;
-async function getNotifications() {
-    try {
-        const token = ("TURBOPACK compile-time truthy", 1) ? localStorage.getItem("authToken") : "TURBOPACK unreachable";
-        if (!token) return [];
-        // Use the correct endpoint that exists in the backend
-        const response = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$axios$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].get("/notifications/unread");
-        return response.data.notifications || [];
-    } catch (error) {
-        console.error("Error fetching notifications:", error);
-        return [];
-    }
-}
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }
@@ -863,4 +798,4 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 }),
 ]);
 
-//# sourceMappingURL=src_17026723._.js.map
+//# sourceMappingURL=src_4f43f506._.js.map

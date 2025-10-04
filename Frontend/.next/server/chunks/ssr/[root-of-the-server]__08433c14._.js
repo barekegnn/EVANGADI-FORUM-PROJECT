@@ -52,6 +52,8 @@ __turbopack_context__.n(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$c
 __turbopack_context__.s([
     "cn",
     ()=>cn,
+    "getCurrentUser",
+    ()=>getCurrentUser,
     "isAuthenticated",
     ()=>isAuthenticated,
     "redirectToLogin",
@@ -73,6 +75,12 @@ function isAuthenticated() {
 function redirectToLogin() {
     if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
     ;
+}
+function getCurrentUser() {
+    if ("TURBOPACK compile-time truthy", 1) return null;
+    //TURBOPACK unreachable
+    ;
+    const token = undefined;
 }
 }),
 "[project]/src/components/ui/button.tsx [app-rsc] (ecmascript)", ((__turbopack_context__) => {

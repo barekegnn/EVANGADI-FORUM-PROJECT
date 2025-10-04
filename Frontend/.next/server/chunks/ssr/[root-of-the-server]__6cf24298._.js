@@ -119,16 +119,26 @@ api.interceptors.request.use((config)=>{
 }, (error)=>{
     return Promise.reject(error);
 });
+api.interceptors.response.use((response)=>{
+    return response;
+}, (error)=>{
+    // Handle 401 errors (unauthorized) by redirecting to login
+    if ("undefined" !== "undefined" && error.response?.status === 401) //TURBOPACK unreachable
+    ;
+    return Promise.reject(error);
+});
 const __TURBOPACK__default__export__ = api;
 }),
 "[project]/src/lib/actions/auth.ts [app-rsc] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
 
-/* __next_internal_action_entry_do_not_use__ [{"4055642efbc5f11f92a1dda8af0f9eae201bfa232d":"login","40f7dae24ea186b7dada60420c0529ab60307d820e":"register"},"",""] */ __turbopack_context__.s([
+/* __next_internal_action_entry_do_not_use__ [{"4055642efbc5f11f92a1dda8af0f9eae201bfa232d":"login","40ad47c62668b7633373542e24e89fc53fb451ca4b":"requestPasswordReset","40f7dae24ea186b7dada60420c0529ab60307d820e":"register"},"",""] */ __turbopack_context__.s([
     "login",
     ()=>login,
     "register",
-    ()=>register
+    ()=>register,
+    "requestPasswordReset",
+    ()=>requestPasswordReset
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/build/webpack/loaders/next-flight-loader/server-reference.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$schemas$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/schemas.ts [app-rsc] (ecmascript)");
@@ -192,13 +202,34 @@ async function login(values) {
         };
     }
 }
+async function requestPasswordReset(email) {
+    try {
+        const response = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$axios$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].post("/auth/request-password-reset", {
+            email
+        });
+        return {
+            success: response.data.message || "Password reset link sent successfully."
+        };
+    } catch (error) {
+        if (error instanceof __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$index$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$locals$3e$__["AxiosError"] && error.response) {
+            return {
+                error: error.response.data.message || "Failed to send reset link."
+            };
+        }
+        return {
+            error: "Something went wrong. Please try again."
+        };
+    }
+}
 ;
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$action$2d$validate$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["ensureServerEntryExports"])([
     register,
-    login
+    login,
+    requestPasswordReset
 ]);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(register, "40f7dae24ea186b7dada60420c0529ab60307d820e", null);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(login, "4055642efbc5f11f92a1dda8af0f9eae201bfa232d", null);
+(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["registerServerReference"])(requestPasswordReset, "40ad47c62668b7633373542e24e89fc53fb451ca4b", null);
 }),
 "[project]/.next-internal/server/app/register/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/auth.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript) <locals>", ((__turbopack_context__) => {
 "use strict";
