@@ -11,6 +11,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
 
 interface NotificationCardProps {
   notification: Notification;
@@ -27,9 +28,21 @@ const iconMap = {
 
 export function NotificationCard({ notification }: NotificationCardProps) {
   const Icon = iconMap[notification.type as keyof typeof iconMap] || BellIcon;
+  const router = useRouter();
+
+  const handleClick = () => {
+    if (notification.link) {
+      router.push(notification.link);
+    } else {
+      router.push("/dashboard");
+    }
+  };
 
   return (
-    <Card className="p-4 flex items-start gap-4 cursor-pointer hover:bg-card/90 transition-colors">
+    <Card
+      className="p-4 flex items-start gap-4 cursor-pointer hover:bg-card/90 transition-colors"
+      onClick={handleClick}
+    >
       <div className="relative">
         <div
           className={cn(

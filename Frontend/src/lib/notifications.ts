@@ -1,5 +1,6 @@
 import api from "./axios";
 import { formatDistanceToNow } from "date-fns";
+import { toast } from "@/hooks/use-toast";
 
 export interface Notification {
   id: string;
@@ -14,6 +15,24 @@ export interface Notification {
   description: string;
   time: string;
   read: boolean;
+  // Add navigation properties
+  entityId?: string;
+  entityType?: "question" | "answer" | "user";
+  link?: string;
+}
+
+export async function getNotificationCount(): Promise<number> {
+  try {
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+    if (!token) return 0;
+
+    const response = await api.get("/notifications/unread/count");
+    return response.data.count || 0;
+  } catch (error: any) {
+    console.error("Error fetching notification count:", error);
+    return 0;
+  }
 }
 
 export async function getNotifications(): Promise<Notification[]> {
@@ -27,19 +46,75 @@ export async function getNotifications(): Promise<Notification[]> {
     const backendNotifications = response.data.notifications || [];
 
     // Transform backend notifications to frontend format
-    return backendNotifications.map((notification: any) => ({
-      id: notification.id,
-      type: mapNotificationType(notification.type),
-      title: notification.message || "Notification",
-      description: formatDescription(notification.context),
-      time: formatDistanceToNow(new Date(notification.created_at), {
-        addSuffix: true,
-      }),
-      read: false, // Since we're fetching unread notifications
-    }));
-  } catch (error) {
+    return backendNotifications.map((notification: any) => {
+      const baseNotification = {
+        id: notification.id,
+        type: mapNotificationType(notification.type),
+        title: notification.message || "Notification",
+        description: formatDescription(notification.context),
+        time: formatDistanceToNow(new Date(notification.created_at), {
+          addSuffix: true,
+        }),
+        read: false, // Since we're fetching unread notifications
+        entityId: notification.entity_id,
+        entityType: mapEntityType(notification.type),
+      };
+
+      // Add navigation link based on entity type
+      return {
+        ...baseNotification,
+        link: generateNotificationLink(baseNotification),
+      };
+    });
+  } catch (error: any) {
     console.error("Error fetching notifications:", error);
+
+    // Check if it's a 401 error (unauthorized) which indicates token issues
+    if (error.response?.status === 401) {
+      toast({
+        title: "Session Expired",
+        description: "Please log in again to continue.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to fetch notifications. Please try again later.",
+        variant: "destructive",
+      });
+    }
+
     return [];
+  }
+}
+
+export async function markNotificationAsRead(
+  notificationId: string
+): Promise<boolean> {
+  try {
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+    if (!token) return false;
+
+    await api.post(`/notifications/${notificationId}/read`);
+    return true;
+  } catch (error: any) {
+    console.error("Error marking notification as read:", error);
+    return false;
+  }
+}
+
+export async function markAllNotificationsAsRead(): Promise<number> {
+  try {
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+    if (!token) return 0;
+
+    const response = await api.post("/notifications/read-all");
+    return response.data.count || 0;
+  } catch (error: any) {
+    console.error("Error marking all notifications as read:", error);
+    return 0;
   }
 }
 
@@ -55,6 +130,39 @@ function mapNotificationType(backendType: string): Notification["type"] {
   };
 
   return typeMap[backendType] || "comment";
+}
+
+// Map backend notification types to entity types
+function mapEntityType(backendType: string): Notification["entityType"] {
+  const entityMap: Record<string, Notification["entityType"]> = {
+    ANSWER_CREATED: "answer",
+    QUESTION_CREATED: "question",
+    MENTION: "question",
+    REPUTATION: "user",
+    SUMMARY: "question",
+    FOLLOWER: "user",
+  };
+
+  return entityMap[backendType] || "question";
+}
+
+// Generate navigation link based on notification type and entity
+function generateNotificationLink(
+  notification: Omit<Notification, "link">
+): string {
+  if (!notification.entityId) return "/dashboard";
+
+  switch (notification.entityType) {
+    case "question":
+      return `/questions/${notification.entityId}`;
+    case "answer":
+      // For answers, we navigate to the question page
+      return `/questions/${notification.entityId}`;
+    case "user":
+      return `/profile`;
+    default:
+      return "/dashboard";
+  }
 }
 
 // Format the description from context, handling objects and other types

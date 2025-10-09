@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, createContext, useContext } from "react";
 import Link from "next/link";
 import { Bell } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -10,23 +10,65 @@ import {
 } from "@/lib/placeholder-images";
 import { Button } from "@/components/ui/button";
 import { isAuthenticated } from "@/lib/utils";
+import { getNotificationCount } from "@/lib/notifications";
 
-export default function Header() {
-  const [isMounted, setIsMounted] = useState(false);
+// Create a context for notification count
+const NotificationContext = createContext({
+  notificationCount: 0,
+  refreshNotificationCount: () => {},
+});
+
+export function useNotificationContext() {
+  return useContext(NotificationContext);
+}
+
+export function NotificationProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [notificationCount, setNotificationCount] = useState(0);
   const [authStatus, setAuthStatus] = useState(false);
-  const userImage = placeholderImages.find(
-    (p: PlaceholderImage) => p.id === "user-avatar"
-  );
+
+  const fetchNotificationCount = async () => {
+    try {
+      if (isAuthenticated()) {
+        const count = await getNotificationCount();
+        setNotificationCount(count);
+      } else {
+        setNotificationCount(0);
+      }
+    } catch (error) {
+      console.error("Error fetching notification count:", error);
+      setNotificationCount(0);
+    }
+  };
+
+  const refreshNotificationCount = () => {
+    fetchNotificationCount();
+  };
 
   useEffect(() => {
-    setIsMounted(true);
     const auth = isAuthenticated();
     setAuthStatus(auth);
+
+    // Fetch notification count if user is authenticated
+    if (auth) {
+      fetchNotificationCount();
+      // Set up interval to refresh notification count
+      const interval = setInterval(fetchNotificationCount, 30000); // Every 30 seconds
+      return () => clearInterval(interval);
+    }
 
     // Listen for storage changes (in case another tab logs out)
     const handleStorageChange = () => {
       const newAuth = isAuthenticated();
       setAuthStatus(newAuth);
+      if (newAuth) {
+        fetchNotificationCount();
+      } else {
+        setNotificationCount(0);
+      }
     };
 
     window.addEventListener("storage", handleStorageChange);
@@ -35,12 +77,40 @@ export default function Header() {
     const interval = setInterval(() => {
       const newAuth = isAuthenticated();
       setAuthStatus(newAuth);
+      if (newAuth) {
+        fetchNotificationCount();
+      } else {
+        setNotificationCount(0);
+      }
     }, 1000);
 
     return () => {
       window.removeEventListener("storage", handleStorageChange);
       clearInterval(interval);
     };
+  }, []);
+
+  return (
+    <NotificationContext.Provider
+      value={{ notificationCount, refreshNotificationCount }}
+    >
+      {children}
+    </NotificationContext.Provider>
+  );
+}
+
+export default function Header() {
+  const [isMounted, setIsMounted] = useState(false);
+  const [authStatus, setAuthStatus] = useState(false);
+  const { notificationCount } = useNotificationContext();
+  const userImage = placeholderImages.find(
+    (p: PlaceholderImage) => p.id === "user-avatar"
+  );
+
+  useEffect(() => {
+    setIsMounted(true);
+    const auth = isAuthenticated();
+    setAuthStatus(auth);
   }, []);
 
   if (!isMounted) {
@@ -71,8 +141,13 @@ export default function Header() {
         <div className="flex items-center gap-4">
           {authStatus ? (
             <>
-              <Link href="/notifications">
+              <Link href="/notifications" className="relative">
                 <Bell className="h-6 w-6 text-foreground" />
+                {notificationCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {notificationCount > 99 ? "99+" : notificationCount}
+                  </span>
+                )}
               </Link>
               <Link href="/profile">
                 <Avatar className="h-8 w-8">
