@@ -32,6 +32,52 @@ async function getUserVoteForAnswer(userId, answerId) {
 }
 
 // ======================================================================
+// Function to get vote status for multiple questions
+// ======================================================================
+async function getUserVotesForQuestions(userId, questionIds) {
+  if (!questionIds || questionIds.length === 0) return {};
+
+  const placeholders = questionIds.map(() => "?").join(",");
+  const sql = `
+    SELECT question_id, vote_type
+    FROM question_votes
+    WHERE user_id = ? AND question_id IN (${placeholders});
+  `;
+
+  const [rows] = await pool.execute(sql, [userId, ...questionIds]);
+
+  const votes = {};
+  rows.forEach((row) => {
+    votes[row.question_id] = row.vote_type;
+  });
+
+  return votes;
+}
+
+// ======================================================================
+// Function to get vote status for multiple answers
+// ======================================================================
+async function getUserVotesForAnswers(userId, answerIds) {
+  if (!answerIds || answerIds.length === 0) return {};
+
+  const placeholders = answerIds.map(() => "?").join(",");
+  const sql = `
+    SELECT answer_id, vote_type
+    FROM answer_votes
+    WHERE user_id = ? AND answer_id IN (${placeholders});
+  `;
+
+  const [rows] = await pool.execute(sql, [userId, ...answerIds]);
+
+  const votes = {};
+  rows.forEach((row) => {
+    votes[row.answer_id] = row.vote_type;
+  });
+
+  return votes;
+}
+
+// ======================================================================
 // 3. Function to update or create a vote on a question
 // ======================================================================
 async function voteOnQuestion(userId, questionId, voteType) {
@@ -67,9 +113,10 @@ async function voteOnQuestion(userId, questionId, voteType) {
       }
     } else {
       // User is casting a new vote
-      await connection.execute(
-        "INSERT INTO question_votes (user_id, question_id, vote_type) VALUES (?, ?, ?)",
-        [userId, questionId, voteType]
+      // Use INSERT ... ON DUPLICATE KEY UPDATE to handle race conditions
+      const [result] = await connection.execute(
+        "INSERT INTO question_votes (user_id, question_id, vote_type) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vote_type = ?",
+        [userId, questionId, voteType, voteType]
       );
       voteChange = voteType;
     }
@@ -135,9 +182,11 @@ async function voteOnAnswer(userId, answerId, voteType) {
         voteChange = voteType - existingVote.vote_type;
       }
     } else {
-      await connection.execute(
-        "INSERT INTO answer_votes (user_id, answer_id, vote_type) VALUES (?, ?, ?)",
-        [userId, answerId, voteType]
+      // User is casting a new vote
+      // Use INSERT ... ON DUPLICATE KEY UPDATE to handle race conditions
+      const [result] = await connection.execute(
+        "INSERT INTO answer_votes (user_id, answer_id, vote_type) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE vote_type = ?",
+        [userId, answerId, voteType, voteType]
       );
       voteChange = voteType;
     }
@@ -173,6 +222,8 @@ async function voteOnAnswer(userId, answerId, voteType) {
 module.exports = {
   getUserVoteForQuestion,
   getUserVoteForAnswer,
+  getUserVotesForQuestions,
+  getUserVotesForAnswers,
   voteOnQuestion,
   voteOnAnswer,
 };

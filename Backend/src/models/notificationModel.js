@@ -53,6 +53,16 @@ async function getUnreadNotifications(recipientUserId, limit = 20, offset = 0) {
   return rows;
 }
 
+async function getUnreadNotificationCount(recipientUserId) {
+  const sql = `
+    SELECT COUNT(*) as count
+    FROM notifications
+    WHERE recipient_user_id = ? AND read_at IS NULL;
+  `;
+  const [rows] = await pool.execute(sql, [recipientUserId]);
+  return rows[0].count;
+}
+
 async function markAsRead(notificationId, recipientUserId) {
   const sql = `
     UPDATE notifications SET read_at = NOW()
@@ -77,4 +87,5 @@ module.exports = {
   getUnreadNotifications,
   markAsRead,
   markAllAsRead,
+  getUnreadNotificationCount,
 };
