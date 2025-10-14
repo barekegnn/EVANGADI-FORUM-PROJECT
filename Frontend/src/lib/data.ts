@@ -1,4 +1,5 @@
 import api from "./axios";
+import { toast } from "@/hooks/use-toast";
 
 export interface Answer {
   id: string;
@@ -21,6 +22,28 @@ export interface Question {
   views: number;
   tags: string[];
   answers: Answer[];
+}
+
+// User interface
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  profilePicture?: string;
+  reputation: number;
+  questionsCount?: number;
+  answersCount?: number;
+  bio?: string;
+  phone?: string;
+  telegram?: string;
+  campus?: string;
+  yearOfStudy?: string;
+  fieldOfStudy?: string;
+  notificationPreferences: {
+    email?: boolean;
+    push?: boolean;
+    newsletter?: boolean;
+  };
 }
 
 export async function getQuestions(): Promise<Question[]> {
@@ -125,6 +148,18 @@ export async function voteOnQuestion(
     if (error.response && error.response.status === 401) {
       throw new Error("You must be logged in to vote on questions.");
     }
+
+    // Handle server busy errors
+    if (error.response && error.response.status === 409) {
+      toast({
+        title: "Server Busy",
+        description:
+          "The server is busy processing votes. Please try again in a moment.",
+        variant: "destructive",
+      });
+      throw new Error("Server is busy. Please try again.");
+    }
+
     throw error;
   }
 }
@@ -145,6 +180,18 @@ export async function voteOnAnswer(
     if (error.response && error.response.status === 401) {
       throw new Error("You must be logged in to vote on answers.");
     }
+
+    // Handle server busy errors
+    if (error.response && error.response.status === 409) {
+      toast({
+        title: "Server Busy",
+        description:
+          "The server is busy processing votes. Please try again in a moment.",
+        variant: "destructive",
+      });
+      throw new Error("Server is busy. Please try again.");
+    }
+
     throw error;
   }
 }
@@ -165,4 +212,64 @@ export async function resetPassword(token: string, newPassword: string) {
     newPassword,
   });
   return response.data;
+}
+
+// User-related functions
+export async function getCurrentUser(): Promise<User> {
+  const response = await api.get("/users/current-user");
+  return response.data;
+}
+
+export async function updateProfile(data: {
+  username: string;
+  email: string;
+  bio?: string;
+  phone?: string;
+  telegram?: string;
+  campus?: string;
+  yearOfStudy?: string;
+  fieldOfStudy?: string;
+}): Promise<User> {
+  const response = await api.put("/users/profile", data);
+  return response.data.user;
+}
+
+export async function updateNotificationPreferences(preferences: {
+  email?: boolean;
+  push?: boolean;
+  newsletter?: boolean;
+}): Promise<any> {
+  const response = await api.put("/users/notification-preferences", {
+    preferences,
+  });
+  return response.data;
+}
+
+export async function getUserReputation(): Promise<number> {
+  const response = await api.get("/users/reputation");
+  return response.data.reputation;
+}
+
+export async function getUserQuestionsCount(): Promise<number> {
+  const response = await api.get("/users/questions-count");
+  return response.data.count;
+}
+
+export async function getUserAnswersCount(): Promise<number> {
+  const response = await api.get("/users/answers-count");
+  return response.data.count;
+}
+
+// Upload profile picture
+export async function uploadProfilePicture(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append("profilePicture", file);
+
+  const response = await api.post("/users/profile-picture", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return response.data.profilePicture;
 }

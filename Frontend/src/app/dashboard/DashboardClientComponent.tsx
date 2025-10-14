@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { QuestionCard } from "@/components/questions/QuestionCard";
 import type { Question } from "@/lib/data";
 import Link from "next/link";
+import { useSocket } from "@/hooks/useSocket";
+import { getQuestions } from "@/lib/data";
 
 type SortType = "Newest First" | "Most Popular" | "Unanswered";
 
@@ -23,6 +25,41 @@ export function DashboardClientComponent({
   const [filteredQuestions, setFilteredQuestions] =
     useState<Question[]>(initialQuestions);
   const [searchTerm, setSearchTerm] = useState("");
+  const { socket, connected } = useSocket();
+
+  // Listen for real-time updates
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNotification = (data: any) => {
+      // Refresh questions when a new question is created or other relevant events
+      if (data.type === "QUESTION_CREATED" || data.type === "ANSWER_CREATED") {
+        refreshQuestions();
+      }
+    };
+
+    const handleQuestionCreated = (data: any) => {
+      // Refresh questions when a new question is created
+      refreshQuestions();
+    };
+
+    socket.on("notification", handleNotification);
+    socket.on("questionCreated", handleQuestionCreated);
+
+    return () => {
+      socket.off("notification", handleNotification);
+      socket.off("questionCreated", handleQuestionCreated);
+    };
+  }, [socket]);
+
+  const refreshQuestions = async () => {
+    try {
+      const questions = await getQuestions();
+      setAllQuestions(questions);
+    } catch (error) {
+      console.error("Failed to refresh questions:", error);
+    }
+  };
 
   useEffect(() => {
     setAllQuestions(initialQuestions);

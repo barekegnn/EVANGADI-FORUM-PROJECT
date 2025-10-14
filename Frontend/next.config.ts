@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Set the turbopack root to the frontend directory to resolve the warning
+  turbopack: {
+    root: "C:\\Users\\Admin\\Desktop\\EVANGADI\\PHASE 4 THE PROJECT PHASE - BUILDING FULLSTACK APPLICATIONS\\HU Connect\\Frontend",
+  },
   images: {
     remotePatterns: [
       {

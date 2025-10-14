@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Question, Answer } from "@/lib/data";
 import { QuestionDetail } from "@/components/questions/QuestionDetail";
 import { AnswerCard } from "@/components/questions/AnswerCard";
@@ -11,12 +11,14 @@ import {
   voteOnQuestion,
   voteOnAnswer,
   acceptAnswer,
+  getQuestionById,
 } from "@/lib/data";
 import { isAuthenticated, getCurrentUser } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { useSocket } from "@/hooks/useSocket";
 
 interface QuestionPageClientComponentProps {
   question: Question;
@@ -29,27 +31,50 @@ export function QuestionPageClientComponent({
   initialAnswers,
   questionId,
 }: QuestionPageClientComponentProps) {
+  const [questionState, setQuestionState] = useState<Question>(question);
   const [answers, setAnswers] = useState<Answer[]>(initialAnswers);
   const { toast } = useToast();
   const router = useRouter();
   const currentUser = getCurrentUser();
+  const { socket, connected } = useSocket();
 
   // Check if the current user is the author of the question
   const isQuestionAuthor =
     currentUser && currentUser.username === question.author;
 
-  const fetchData = async () => {
+  // Listen for real-time updates
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleAnswerCreated = (data: any) => {
+      // Refresh the question data when a new answer is created
+      refreshQuestionData();
+    };
+
+    const handleNotification = (data: any) => {
+      // Refresh question data for any relevant notification
+      if (data.entityId === questionId || data.type === "ANSWER_CREATED") {
+        refreshQuestionData();
+      }
+    };
+
+    socket.on("notification", handleNotification);
+    // We can also listen for specific events if the backend emits them
+    socket.on("answerCreated", handleAnswerCreated);
+
+    return () => {
+      socket.off("notification", handleNotification);
+      socket.off("answerCreated", handleAnswerCreated);
+    };
+  }, [socket, questionId]);
+
+  const refreshQuestionData = async () => {
     try {
-      // In a real implementation, we would re-fetch the data
-      // For now, we'll just reset to initial state
-      setAnswers(initialAnswers);
+      const data = await getQuestionById(questionId);
+      setQuestionState(data.question);
+      setAnswers(data.answers);
     } catch (error) {
-      console.error("Failed to fetch question details:", error);
-      toast({
-        title: "Error",
-        description: "Could not load question details.",
-        variant: "destructive",
-      });
+      console.error("Failed to refresh question data:", error);
     }
   };
 
@@ -71,12 +96,8 @@ export function QuestionPageClientComponent({
         title: "Answer Submitted!",
         description: "Your answer has been posted successfully.",
       });
-      // In a real implementation, we would re-fetch the answers
-      // For now, we'll show a message that the page should be refreshed
-      toast({
-        title: "Page Update",
-        description: "Please refresh the page to see your new answer.",
-      });
+      // Refresh the question data to show the new answer
+      await refreshQuestionData();
     } catch (error) {
       console.error("Failed to submit answer:", error);
       toast({
@@ -109,12 +130,8 @@ export function QuestionPageClientComponent({
       } else {
         await voteOnAnswer(questionId, itemId, voteType);
       }
-      // In a real implementation, we would re-fetch the data
-      // For now, we'll show a message that the page should be refreshed
-      toast({
-        title: "Vote Recorded",
-        description: "Please refresh the page to see the updated vote count.",
-      });
+      // Refresh the question data to show updated vote counts
+      await refreshQuestionData();
     } catch (error: any) {
       console.error("Failed to vote:", error);
       const message = error.message || "Your vote could not be recorded.";
@@ -144,12 +161,8 @@ export function QuestionPageClientComponent({
         title: "Answer Accepted",
         description: "You've marked this answer as the solution.",
       });
-      // In a real implementation, we would re-fetch the data
-      // For now, we'll show a message that the page should be refreshed
-      toast({
-        title: "Page Update",
-        description: "Please refresh the page to see the accepted answer.",
-      });
+      // Refresh the question data to show the accepted answer
+      await refreshQuestionData();
     } catch (error) {
       console.error("Failed to accept answer:", error);
       toast({
@@ -163,8 +176,10 @@ export function QuestionPageClientComponent({
   return (
     <>
       <QuestionDetail
-        question={question}
-        onVote={(voteType) => handleVote("question", question.id, voteType)}
+        question={questionState}
+        onVote={(voteType) =>
+          handleVote("question", questionState.id, voteType)
+        }
       />
 
       <div className="mt-6">

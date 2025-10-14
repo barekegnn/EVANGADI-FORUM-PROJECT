@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { isAuthenticated } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -14,6 +15,11 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       const auth = isAuthenticated();
 
       if (!auth) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to access this page.",
+          variant: "destructive",
+        });
         router.push("/");
       } else {
         setIsAuthenticatedUser(true);

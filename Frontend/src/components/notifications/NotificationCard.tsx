@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Notification } from "@/lib/notifications";
+import { Notification, markNotificationAsRead } from "@/lib/notifications";
 import {
   MessageSquare,
   User,
@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
+import { useNotificationContext } from "@/components/Header";
 
 interface NotificationCardProps {
   notification: Notification;
@@ -29,8 +30,14 @@ const iconMap = {
 export function NotificationCard({ notification }: NotificationCardProps) {
   const Icon = iconMap[notification.type as keyof typeof iconMap] || BellIcon;
   const router = useRouter();
+  const { refreshNotificationCount } = useNotificationContext();
 
-  const handleClick = () => {
+  const handleClick = async () => {
+    // Mark notification as read when clicked
+    await markNotificationAsRead(notification.id);
+    // Refresh the notification count in the header
+    refreshNotificationCount();
+
     if (notification.link) {
       router.push(notification.link);
     } else {

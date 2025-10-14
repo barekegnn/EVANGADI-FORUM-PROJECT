@@ -2,13 +2,13 @@
   "pages": {
     "/questions/[id]/page": [
       "static/chunks/src_app_global_9624efb4.css",
-      "static/chunks/node_modules_f06ce398._.js",
+      "static/chunks/node_modules_3a66a435._.js",
       "static/chunks/src_2bc135c0._.js",
       "static/chunks/src_app_layout_tsx_0a548d63._.js",
-      "static/chunks/node_modules_next_dist_client_components_builtin_global-error_70825f38.js",
-      "static/chunks/node_modules_7ae3c164._.js",
-      "static/chunks/src_8179d7e6._.js",
-      "static/chunks/src_app_questions_[id]_page_tsx_70825f38._.js",
+      "static/chunks/node_modules_next_dist_client_components_builtin_global-error_a986d5fb.js",
+      "static/chunks/src_a2f5f5d4._.js",
+      "static/chunks/node_modules_560898f5._.js",
+      "static/chunks/src_app_questions_[id]_page_tsx_a986d5fb._.js",
       "static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_57d40746._.js",
       "static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
       "static/chunks/node_modules_next_dist_compiled_next-devtools_index_a9cb0712.js",

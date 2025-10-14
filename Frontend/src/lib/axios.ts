@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "@/hooks/use-toast";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
 
@@ -33,8 +34,16 @@ api.interceptors.response.use(
     if (typeof window !== "undefined" && error.response?.status === 401) {
       // Remove the token if it's invalid
       localStorage.removeItem("authToken");
-      // Note: We can't use router.push here because this is not a React component
-      // The ProtectedRoute component will handle the actual redirection
+
+      // Show a friendly message to the user
+      toast({
+        title: "Session Expired",
+        description: "Your session has expired. Please log in again.",
+        variant: "destructive",
+      });
+
+      // Redirect to login page
+      window.location.href = "/";
     }
     return Promise.reject(error);
   }

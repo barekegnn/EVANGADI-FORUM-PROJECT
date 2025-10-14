@@ -21,19 +21,6 @@ export interface Notification {
   link?: string;
 }
 
-export async function getNotificationCount(): Promise<number> {
-  try {
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
-    if (!token) return 0;
-
-    const response = await api.get("/notifications/unread/count");
-    return response.data.count || 0;
-  } catch (error: any) {
-    console.error("Error fetching notification count:", error);
-    return 0;
-  }
-}
 
 export async function getNotifications(): Promise<Notification[]> {
   try {
@@ -85,6 +72,20 @@ export async function getNotifications(): Promise<Notification[]> {
     }
 
     return [];
+  }
+}
+
+export async function getNotificationCount(): Promise<number> {
+  try {
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+    if (!token) return 0;
+
+    const response = await api.get("/notifications/unread/count");
+    return response.data.count || 0;
+  } catch (error: any) {
+    console.error("Error fetching notification count:", error);
+    return 0;
   }
 }
 
