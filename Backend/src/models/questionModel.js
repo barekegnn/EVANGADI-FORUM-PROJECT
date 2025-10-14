@@ -37,6 +37,11 @@ async function getQuestionById(questionId) {
 // ======================================================================
 // 3. Function to get all questions
 // ======================================================================
+// ... existing code ...
+
+// ======================================================================
+// 3. Function to get all questions
+// ======================================================================
 async function getAllQuestions() {
   const sql = `
         SELECT
@@ -47,7 +52,8 @@ async function getAllQuestions() {
             q.vote_count,
             q.created_at,
             u.id AS user_id,
-            u.username AS author_username
+            u.username AS author_username,
+            (SELECT COUNT(*) FROM answers WHERE question_id = q.id) AS answer_count
         FROM questions q
         JOIN users u ON q.user_id = u.id
         ORDER BY q.created_at DESC;
@@ -55,6 +61,7 @@ async function getAllQuestions() {
   const [rows] = await pool.execute(sql);
   return rows;
 }
+
 
 // ======================================================================
 // 4. Function to update an existing question

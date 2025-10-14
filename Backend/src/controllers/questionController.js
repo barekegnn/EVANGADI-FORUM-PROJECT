@@ -33,6 +33,7 @@ async function createQuestion(req, res) {
     // Determine recipients for notifications (MVP: all users except author)
     // For production, scope by course/section or matching tags.
     const recipients = await getAllOtherUserIds(userId);
+
     if (recipients.length > 0) {
       const message = `New question: ${title}`;
       const rows = recipients.map((rid) => ({
@@ -56,14 +57,17 @@ async function createQuestion(req, res) {
       try {
         const io = req.app.get("io");
         if (io) {
-          for (const rid of recipients) {
-            io.to(`user:${rid}`).emit("notification", {
-              type: "QUESTION_CREATED",
-              entityId: questionId,
-              message,
-              createdAt: new Date().toISOString(),
-            });
-          }
+          // Add a small delay to ensure sockets have time to connect
+          setTimeout(() => {
+            for (const rid of recipients) {
+              io.to(`user:${rid}`).emit("notification", {
+                type: "QUESTION_CREATED",
+                entityId: questionId,
+                message,
+                createdAt: new Date().toISOString(),
+              });
+            }
+          }, 1000); // 1 second delay
         }
       } catch (e) {
         console.error("Failed to emit notifications:", e);

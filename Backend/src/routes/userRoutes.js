@@ -3,9 +3,13 @@ const router = express.Router();
 const {
   getCurrentUser,
   updateProfile,
+  uploadProfilePicture,
   updateNotificationPreferences,
   updateExpertiseTags,
   getUserReputation,
+  getUserQuestionsCount,
+  getUserAnswersCount,
+  upload,
 } = require("../controllers/userController");
 const { protect } = require("../middleware/authMiddleware");
 
@@ -15,6 +19,14 @@ router.get("/current-user", protect, getCurrentUser);
 // @route   PUT /api/users/profile
 router.put("/profile", protect, updateProfile);
 
+// @route   POST /api/users/profile-picture
+router.post(
+  "/profile-picture",
+  protect,
+  upload.single("profilePicture"),
+  uploadProfilePicture
+);
+
 // @route   PUT /api/users/notification-preferences
 router.put("/notification-preferences", protect, updateNotificationPreferences);
 
@@ -23,5 +35,11 @@ router.put("/expertise-tags", protect, updateExpertiseTags);
 
 // @route   GET /api/users/reputation
 router.get("/reputation", protect, getUserReputation);
+
+// @route   GET /api/users/questions-count
+router.get("/questions-count", protect, getUserQuestionsCount);
+
+// @route   GET /api/users/answers-count
+router.get("/answers-count", protect, getUserAnswersCount);
 
 module.exports = router;

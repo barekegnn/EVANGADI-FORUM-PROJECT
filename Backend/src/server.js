@@ -2,8 +2,10 @@
 require("dotenv").config();
 
 const http = require("http");
+const express = require("express");
 const jwt = require("jsonwebtoken");
 const app = require("./app");
+const path = require("path");
 
 let SocketIOServer = null;
 try {
@@ -18,10 +20,19 @@ const PORT = process.env.PORT;
 
 const server = http.createServer(app);
 
+// Serve static files from the uploads directory
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
+
 if (SocketIOServer) {
   const io = new SocketIOServer(server, {
     cors: {
-      origin: "*",
+      origin: [
+        "http://localhost:9002",
+        "http://127.0.0.1:9002",
+        "http://localhost:3000",
+      ],
+      methods: ["GET", "POST"],
+      credentials: true,
     },
   });
 
@@ -35,6 +46,7 @@ if (SocketIOServer) {
       socket.user = { id: decoded.id };
       next();
     } catch (err) {
+      console.error("Socket authentication error:", err);
       next(err);
     }
   });
@@ -43,6 +55,12 @@ if (SocketIOServer) {
     // Join a personal room for targeted notifications
     if (socket.user && socket.user.id) {
       socket.join(`user:${socket.user.id}`);
+
+      // Send a test event to verify the connection
+      socket.emit("test", {
+        message: "Connected successfully",
+        userId: socket.user.id,
+      });
     }
   });
 

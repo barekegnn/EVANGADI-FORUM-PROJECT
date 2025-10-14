@@ -20,6 +20,7 @@ async function getUnreadCount(req, res) {
   const { id: userId } = req.user;
   try {
     const count = await notificationModel.getUnreadNotificationCount(userId);
+    console.log(`User ${userId} has ${count} unread notifications`);
     res.status(200).json({ count });
   } catch (error) {
     console.error("Error getting notification count:", error);
@@ -51,4 +52,9 @@ async function markAllRead(req, res) {
   }
 }
 
-module.exports = { listUnread, getUnreadCount, markOneRead, markAllRead };
+module.exports = {
+  listUnread,
+  getUnreadCount,
+  markOneRead,
+  markAllRead,
+};
