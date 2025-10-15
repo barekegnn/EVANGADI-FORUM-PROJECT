@@ -12,6 +12,17 @@ async function findById(id) {
   return rows[0];
 }
 
+// Function to find a user by their username
+async function findByUsername(username) {
+  const sql = `
+    SELECT id, username, email, profile_picture, bio, phone, location, telegram, campus, year_of_study, field_of_study
+    FROM users
+    WHERE username = ?;
+  `;
+  const [rows] = await pool.execute(sql, [username]);
+  return rows[0];
+}
+
 //2.Function to update a user's profile by their ID.
 async function updateById(
   id,
@@ -185,6 +196,7 @@ async function getExpertiseTags(userId) {
 
 module.exports = {
   findById,
+  findByUsername,
   updateById,
   updateProfilePicture,
   updateReputation,

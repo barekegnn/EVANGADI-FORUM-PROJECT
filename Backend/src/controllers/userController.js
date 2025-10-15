@@ -101,6 +101,55 @@ const getCurrentUser = asyncHandler(async (req, res) => {
   res.status(200).json(user);
 });
 
+// @desc    Get user profile by username
+// @route   GET /api/users/username/:username
+// @access  Public
+const getUserByUsername = asyncHandler(async (req, res) => {
+  const { username } = req.params;
+
+  // Find user by username
+  const user = await userModel.findByUsername(username);
+
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  // Get additional user data
+  const [
+    reputation,
+    notificationPreferences,
+    expertiseTags,
+    questionsCount,
+    answersCount,
+  ] = await Promise.all([
+    userModel.getReputation(user.id),
+    userModel.getNotificationPreferences(user.id),
+    userModel.getExpertiseTags(user.id),
+    userModel.getQuestionsCount(user.id),
+    userModel.getAnswersCount(user.id),
+  ]);
+
+  const userData = {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    profilePicture: getFullProfilePictureUrl(user.profile_picture),
+    bio: user.bio,
+    phone: user.phone,
+    telegram: user.telegram,
+    campus: user.campus,
+    yearOfStudy: user.year_of_study,
+    fieldOfStudy: user.field_of_study,
+    reputation,
+    questionsCount,
+    answersCount,
+    notificationPreferences,
+    expertiseTags,
+  };
+
+  res.status(200).json(userData);
+});
+
 // @desc    Update a user's profile
 // @route   PUT /api/users/profile
 // @access  Private
@@ -264,6 +313,7 @@ const getUserAnswersCount = asyncHandler(async (req, res) => {
 
 module.exports = {
   getCurrentUser,
+  getUserByUsername,
   updateProfile,
   uploadProfilePicture,
   updateNotificationPreferences,

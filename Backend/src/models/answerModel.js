@@ -1,6 +1,21 @@
 const pool = require("../config/database");
 const userModel = require("./userModel");
 
+// Helper function to construct full profile picture URL
+function getFullProfilePictureUrl(profilePicturePath) {
+  if (!profilePicturePath) return null;
+
+  // If it's already a full URL, return as is
+  if (profilePicturePath.startsWith("http")) {
+    return profilePicturePath;
+  }
+
+  // Get the base URL from environment variable or default to localhost:5000
+  // Since static files are served from the backend, we use the backend URL
+  const baseUrl = `http://localhost:${process.env.PORT || 5000}`;
+  return `${baseUrl}${profilePicturePath}`;
+}
+
 // ======================================================================
 // 1. Function to create a new answer
 // ======================================================================
@@ -25,6 +40,7 @@ async function getAnswersByQuestionId(questionId) {
             a.created_at,
             u.id AS user_id,
             u.username,
+            u.profile_picture AS author_profile_picture,
             a.vote_count AS votes
         FROM answers a
         JOIN users u ON a.user_id = u.id
@@ -32,7 +48,12 @@ async function getAnswersByQuestionId(questionId) {
         ORDER BY a.is_accepted_answer DESC, a.created_at DESC;
     `;
   const [rows] = await pool.execute(sql, [questionId]);
-  return rows;
+  return rows.map((answer) => ({
+    ...answer,
+    author_profile_picture: getFullProfilePictureUrl(
+      answer.author_profile_picture
+    ),
+  }));
 }
 
 // ======================================================================

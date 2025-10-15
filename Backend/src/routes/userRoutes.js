@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   getCurrentUser,
+  getUserByUsername, // Add this line
   updateProfile,
   uploadProfilePicture,
   updateNotificationPreferences,
@@ -15,6 +16,9 @@ const { protect } = require("../middleware/authMiddleware");
 
 // @route   GET /api/users/current-user
 router.get("/current-user", protect, getCurrentUser);
+
+// @route   GET /api/users/username/:username
+router.get("/username/:username", getUserByUsername); // Add this line
 
 // @route   PUT /api/users/profile
 router.put("/profile", protect, updateProfile);
