@@ -254,7 +254,7 @@ export default function Header() {
           ) : (
             <nav className="flex gap-2">
               <Button asChild variant="ghost">
-                <Link href="/">Login</Link>
+                <Link href="/login">Login</Link>
               </Button>
               <Button asChild>
                 <Link href="/register">Sign Up</Link>
