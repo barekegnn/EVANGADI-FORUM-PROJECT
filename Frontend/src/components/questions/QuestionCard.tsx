@@ -11,6 +11,8 @@ import {
 import { ArrowUp, Eye, MessageSquare } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import type { Question } from "@/lib/data";
+import { placeholderImages } from "@/lib/placeholder-images";
+import type { PlaceholderImage } from "@/lib/placeholder-images";
 
 interface QuestionCardProps {
   question: Question;
@@ -28,7 +30,7 @@ export function QuestionCard({ question }: QuestionCardProps) {
         const now = new Date();
         const timeDifference = Math.abs(now.getTime() - date.getTime());
         const daysDifference = timeDifference / (1000 * 3600 * 24);
-        
+
         // If the date is within a reasonable range (not more than 10 years in the past or future)
         if (daysDifference < 365 * 10) {
           timeAgo = formatDistanceToNow(date, {
@@ -41,12 +43,23 @@ export function QuestionCard({ question }: QuestionCardProps) {
     }
   }
 
+  // Get the default user avatar placeholder
+  const userImage = placeholderImages.find(
+    (p: PlaceholderImage) => p.id === "user-avatar"
+  );
+
   return (
     <Card className="w-full cursor-pointer hover:bg-card/90 transition-colors">
       <CardHeader className="p-4">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={question.avatarUrl} alt={question.author} />
+            {question.avatarUrl ? (
+              <AvatarImage src={question.avatarUrl} alt={question.author} />
+            ) : userImage ? (
+              <AvatarImage src={userImage.imageUrl} alt="User avatar" />
+            ) : (
+              <AvatarFallback>{question.author.charAt(0)}</AvatarFallback>
+            )}
             <AvatarFallback>{question.author.charAt(0)}</AvatarFallback>
           </Avatar>
           <div>
@@ -78,11 +91,12 @@ export function QuestionCard({ question }: QuestionCardProps) {
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <div className="flex flex-wrap gap-2">
-          {question.tags && question.tags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="font-normal">
-              {tag}
-            </Badge>
-          ))}
+          {question.tags &&
+            question.tags.map((tag) => (
+              <Badge key={tag} variant="secondary" className="font-normal">
+                {tag}
+              </Badge>
+            ))}
         </div>
       </CardFooter>
     </Card>

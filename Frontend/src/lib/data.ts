@@ -26,6 +26,7 @@ export interface Question {
 
 // User interface
 export interface User {
+  expertiseTags: string[];
   id: string;
   username: string;
   email: string;
@@ -52,7 +53,8 @@ export async function getQuestions(): Promise<Question[]> {
   return response.data.map((question: any) => ({
     id: question.id,
     author: question.author_username,
-    avatarUrl: "/placeholder-user.jpg", // Default avatar, should be updated with actual user avatars
+    // In getQuestions():
+    avatarUrl: question.author_profile_picture,
     date: question.created_at,
     title: question.title,
     content: question.content,
@@ -82,7 +84,7 @@ export async function getQuestionById(
   const transformedQuestion: Question = {
     id: questionData.id,
     author: questionData.author_username,
-    avatarUrl: "/placeholder-user.jpg", // Default avatar
+    avatarUrl: questionData.author_profile_picture,
     date: questionData.created_at,
     title: questionData.title,
     content: questionData.content,
@@ -96,7 +98,7 @@ export async function getQuestionById(
   const transformedAnswers: Answer[] = answers.map((answer: any) => ({
     id: answer.answer_id || answer.id,
     author: answer.username || answer.author || "Unknown",
-    avatarUrl: "/placeholder-user.jpg", // Default avatar
+    avatarUrl: answer.author_profile_picture || "/placeholder-user.jpg", // Use profile picture if available, otherwise default
     date: answer.created_at,
     content: answer.content,
     votes: answer.votes || answer.vote_count || 0,
@@ -215,6 +217,11 @@ export async function resetPassword(token: string, newPassword: string) {
 }
 
 // User-related functions
+export async function getUserByUsername(username: string): Promise<User> {
+  const response = await api.get(`/users/username/${username}`);
+  return response.data;
+}
+
 export async function getCurrentUser(): Promise<User> {
   const response = await api.get("/users/current-user");
   return response.data;

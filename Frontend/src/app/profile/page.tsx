@@ -43,6 +43,7 @@ import {
   uploadProfilePicture,
   User as UserType,
 } from "@/lib/data";
+import Header from "@/components/Header";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -254,13 +255,10 @@ export default function ProfilePage() {
     return (
       <ProtectedRoute>
         <div className="min-h-screen bg-background">
-          <header className="py-4 px-6 bg-background border-b sticky top-0 z-10">
-            <div className="container mx-auto flex justify-between items-center">
-              <div className="h-6 w-24 bg-muted rounded animate-pulse"></div>
-              <div className="flex items-center gap-4">
-                <div className="h-6 w-6 bg-muted rounded-full animate-pulse"></div>
-                <div className="h-8 w-8 bg-muted rounded-full animate-pulse"></div>
-              </div>
+          <Header />
+          <header className="py-4 px-6 bg-background border-b">
+            <div className="container mx-auto">
+              <h1 className="text-xl font-bold">Profile</h1>
             </div>
           </header>
 
@@ -279,7 +277,8 @@ export default function ProfilePage() {
     return (
       <ProtectedRoute>
         <div className="min-h-screen bg-background flex flex-col">
-          <header className="py-4 px-6 bg-background border-b sticky top-0 z-10">
+          <Header />
+          <header className="py-4 px-6 bg-background border-b">
             <div className="container mx-auto">
               <h1 className="text-xl font-bold">Profile</h1>
             </div>
@@ -301,8 +300,9 @@ export default function ProfilePage() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-background flex flex-col">
-        {/* Header */}
-        <header className="py-4 px-6 bg-background border-b sticky top-0 z-10">
+        <Header />
+        {/* Profile header */}
+        <header className="py-4 px-6 bg-background border-b">
           <div className="container mx-auto flex justify-between items-center">
             <h1 className="text-xl font-bold">Profile</h1>
             <div className="flex items-center gap-4">

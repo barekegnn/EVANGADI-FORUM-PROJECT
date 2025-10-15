@@ -545,6 +545,8 @@ __turbopack_context__.s([
     ()=>getQuestions,
     "getUserAnswersCount",
     ()=>getUserAnswersCount,
+    "getUserByUsername",
+    ()=>getUserByUsername,
     "getUserQuestionsCount",
     ()=>getUserQuestionsCount,
     "getUserReputation",
@@ -574,7 +576,8 @@ async function getQuestions() {
     return response.data.map((question)=>({
             id: question.id,
             author: question.author_username,
-            avatarUrl: "/placeholder-user.jpg",
+            // In getQuestions():
+            avatarUrl: question.author_profile_picture,
             date: question.created_at,
             title: question.title,
             content: question.content,
@@ -598,7 +601,7 @@ async function getQuestionById(id) {
     const transformedQuestion = {
         id: questionData.id,
         author: questionData.author_username,
-        avatarUrl: "/placeholder-user.jpg",
+        avatarUrl: questionData.author_profile_picture,
         date: questionData.created_at,
         title: questionData.title,
         content: questionData.content,
@@ -611,7 +614,7 @@ async function getQuestionById(id) {
     const transformedAnswers = answers.map((answer)=>({
             id: answer.answer_id || answer.id,
             author: answer.username || answer.author || "Unknown",
-            avatarUrl: "/placeholder-user.jpg",
+            avatarUrl: answer.author_profile_picture || "/placeholder-user.jpg",
             date: answer.created_at,
             content: answer.content,
             votes: answer.votes || answer.vote_count || 0,
@@ -707,6 +710,10 @@ async function resetPassword(token, newPassword) {
         token,
         newPassword
     });
+    return response.data;
+}
+async function getUserByUsername(username) {
+    const response = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$axios$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].get(`/users/username/${username}`);
     return response.data;
 }
 async function getCurrentUser() {
